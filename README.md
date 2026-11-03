@@ -329,6 +329,8 @@ Copy `.env.example` to `.env`. Never commit `.env`.
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Docker | Database login. Change the password outside local use. |
 | `VERIFICATION_MIN_CONFIDENCE` | No | Below this the AI sends the task to a person (default `0.6`). |
 | `VERIFICATION_MAX_FOLLOW_UPS` | No | Retakes the worker gets before a manager steps in (default `3`). |
+| `SELF_APPROVE_ENABLED` | No | Automatically approves a worker's own fully scored task when it reaches the minimum (default `true`). |
+| `SELF_APPROVE_MIN_SCORE` | No | Minimum AI score for automatic approval of self-created work (default `80`). |
 | `CORS_ORIGINS` | Only when the web app is on another origin | Allowed sites. Docker uses one origin, so it is not needed. |
 
 Check `.env.example` for the full, current list. Generate a secret with `openssl rand -hex 32`.
@@ -536,4 +538,4 @@ All project documentation is merged into one file in the project root: [`PROOFLI
 | Too many requests | Wait the number of seconds shown. |
 
 ---
-
+                                                                                                                                                                                                                                                

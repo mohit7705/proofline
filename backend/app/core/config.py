@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     score_frames_per_video: int = 4
     # How many seconds of the After video are listened to for the challenge code.
     score_audio_seconds: int = 90
-    # How many AI analyses one worker may start per hour.
+    # Whether a worker's own sufficiently strong work is approved automatically.
+    self_approve_enabled: bool = True
+    self_approve_min_score: int = 80
 
     # Demo and tests: answer AI calls with built-in sample responses.
     model_mock: bool = False

@@ -1,0 +1,43 @@
+.quick-decision {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 14px;
+  background: var(--surface-2, rgba(99, 53, 232, 0.05));
+  border: 1px solid var(--border, #e6e8f0);
+  border-radius: 12px;
+}
+
+.quick-decision__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quick-decision__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quick-decision__reason {
+  display: grid;
+  gap: 8px;
+}
+
+.quick-decision__reason label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.quick-decision__reason textarea {
+  width: 100%;
+  padding: 8px 10px;
+  color: inherit;
+  font: inherit;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d5d9e4);
+  border-radius: 8px;
+  resize: vertical;
+}

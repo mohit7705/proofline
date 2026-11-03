@@ -16,6 +16,7 @@ import {
 } from "../../features/manager/WorkOrderDialogs";
 import { useUsers } from "../../features/manager/useUsers";
 import { TaskReview } from "../../features/review/TaskReview";
+import { QuickDecision } from "../../features/review/QuickDecision";
 import { AuditTimeline } from "../../features/audit/AuditTimeline";
 import { ReportPanel } from "../../features/reports/ReportPanel";
 import { locationLabel } from "../../features/work-orders/LocationFields";
@@ -345,6 +346,7 @@ export function WorkOrderDetailPage() {
                     </ul>
                   )}
 
+                  <QuickDecision task={task} onDone={() => void reload()} />
                   <div className="task-card-actions">
                     <Button size="s" onClick={() => setReqFor(task.id)}>
                       <Icon name="plus" size={14} />

@@ -462,6 +462,15 @@ async def run_score_job(
         notes = [d["retake_request"] for d in details if d.get("retake_request")]
         findings = {"mock": settings.model_mock, "items": details, "retake_notes": notes}
         scored = any(i["score"] is not None for i in items)
+        if scored:
+            from app.services.workflow import self_complete_if_ready
+
+            try:
+                self_complete_if_ready(db, task, user)
+            except Exception:  # noqa: BLE001
+                logger.exception("Auto-approval failed for task %s", task.id)
+                db.rollback()
+                job = db.get(ScoreJob, job_id)
         _finish(db, job, "completed" if scored else "failed", None if scored else (first_error or "analysis_failed"), findings)
     except Exception:  # noqa: BLE001 - the run must always end in a saved state
         logger.exception("AI score failed for task %s", job.task_id)

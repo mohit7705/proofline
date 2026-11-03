@@ -8,6 +8,7 @@ import { Skeleton } from "../../components/ui/Spinner";
 import { useAuth } from "../../features/auth/AuthContext";
 import { StatusDistribution } from "../../features/manager/StatusDistribution";
 import { ScoreOverview } from "../../features/manager/ScoreOverview";
+import { ManagerModelUsage } from "../../features/manager/ManagerModelUsage";
 import { PanelHeading } from "../../features/manager/PanelHeading";
 import { useLoad } from "../../hooks/useLoad";
 import { buildAttention, overviewNumbers } from "../../lib/dashboard";
@@ -143,6 +144,7 @@ export function OverviewPage() {
                   <StatusDistribution orders={orders} />
                 </section>
               </div>
+              <ManagerModelUsage />
 
               <div className="manager-overview__bottom-grid">
                 <section className="manager-overview__panel" aria-labelledby="attn-title">

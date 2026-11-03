@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Icon, type IconName } from "../../components/ui/Icon";
 import { ScoreChip, ScoreRing } from "../../components/ui/ScoreCard";
 import { usePolling } from "../../hooks/usePolling";
 import {
   ApiError,
+  completeOwnWork,
   errorMessage,
   getScore,
   getScoreAnalysis,
   getScoreJob,
-  completeOwnWork,
   listEvidence,
   startScoreRun,
 } from "../../services/api";
@@ -25,6 +25,9 @@ import type {
 import { MyFiles } from "./MyFiles";
 
 type Part = ItemScore["parts"][number];
+
+/** Must match SELF_APPROVE_MIN_SCORE on the server. */
+const SELF_APPROVE_MIN = 80;
 
 /** Share of the item score each check carries. Same numbers the server uses. */
 const WEIGHT: Record<string, number> = { vision: 50, part: 20, code: 15, rules: 15 };
@@ -178,17 +181,21 @@ export function AiReport({
   requirements,
   refreshKey = 0,
   startNote = null,
+  quiet = false,
   selfCreated = false,
   taskStatus,
-  onCompleted,
+  onScoreChanged,
+  onReopen,
 }: {
   taskId: string;
   requirements: Requirement[];
   refreshKey?: number;
   startNote?: string | null;
+  quiet?: boolean;
   selfCreated?: boolean;
   taskStatus?: string;
-  onCompleted?: () => void;
+  onScoreChanged?: () => void;
+  onReopen?: () => void;
 }) {
   const [files, setFiles] = useState<Evidence[]>([]);
   const [score, setScore] = useState<ScoreSet | null>(null);
@@ -196,9 +203,9 @@ export function AiReport({
   const [job, setJob] = useState<ScoreJob | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [completing, setCompleting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState<Tab>("result");
+  const autoTried = useRef(false);
 
   const titles = Object.fromEntries(requirements.map((r) => [r.id, r.title]));
   const running = job?.status === "queued" || job?.status === "processing";
@@ -226,7 +233,9 @@ export function AiReport({
     const latest = await getScoreJob(taskId);
     setJob(latest);
     if (latest.status === "completed" || latest.status === "failed") {
+      autoTried.current = false;
       await refresh();
+      onScoreChanged?.();
     }
   });
 
@@ -250,19 +259,6 @@ export function AiReport({
     }
   }
 
-  async function markDone() {
-    setCompleting(true);
-    setMessage(null);
-    try {
-      await completeOwnWork(taskId);
-      onCompleted?.();
-    } catch (error) {
-      setMessage(errorMessage(error));
-    } finally {
-      setCompleting(false);
-    }
-  }
-
   const models = score ? modelList(score) : [];
   const task = score?.task ?? null;
   const found = score && task ? collect(score, analysis?.retake_notes ?? []) : null;
@@ -272,6 +268,16 @@ export function AiReport({
       .map((part) => ({ part, text: part.detail })),
   );
   const failed = job?.status === "failed" && !running;
+  const passing = task?.score !== null && task?.score !== undefined && task.score >= SELF_APPROVE_MIN;
+  useEffect(() => {
+    if (autoTried.current) return;
+    if (!selfCreated || taskStatus !== "submitted" || running || !passing || score?.stale) return;
+    autoTried.current = true;
+    void completeOwnWork(taskId)
+      .then(() => onScoreChanged?.())
+      .catch((error) => setMessage(errorMessage(error)));
+  }, [selfCreated, taskStatus, running, passing, score?.stale, taskId, onScoreChanged]);
+  if (quiet && loaded && !score?.task && !running) return null;
   const cards = score ? summarize(score.items) : [];
   const scoredCards = cards.filter((part) => part.score !== null);
   const weakest = scoredCards.length
@@ -296,6 +302,29 @@ export function AiReport({
             >
               {starting ? "Starting…" : task ? "Run again" : "Run AI check"}
             </Button>
+          ) : null}
+          {selfCreated && task ? (
+            taskStatus === "approved" ? (
+              <p role="status" className="ai-note ai-note--ok">
+                Approved automatically by the AI. Score {task.score} (needs {SELF_APPROVE_MIN} or more).
+              </p>
+            ) : taskStatus === "submitted" && !running && !score?.stale ? (
+              <div role="status" className="ai-note ai-note--warn ai-approval">
+                <span>
+                  Not approved. Score {task.score ?? "not scored"}; {SELF_APPROVE_MIN} or more is needed. It now waits
+                  for a manager. Fix what the report lists and send it again for a new check.
+                </span>
+                {onReopen ? (
+                  <Button size="s" variant="primary" onClick={onReopen}>
+                    Fix and resubmit
+                  </Button>
+                ) : null}
+              </div>
+            ) : null
+          ) : !selfCreated && taskStatus === "submitted" && task ? (
+            <p role="status" className="ai-note ai-note--info">
+              A manager gave you this work, so a manager makes the decision. The AI score is advice.
+            </p>
           ) : null}
         </div>
       </header>
@@ -356,28 +385,6 @@ export function AiReport({
               New files were added after this score. Run again.
             </p>
           ) : null}
-          {selfCreated && taskStatus === "approved" ? (
-            <div className="ai-self-complete" role="status">
-              <strong>Marked as done</strong>
-              <p>This self-created work was closed from its fresh Strong AI result.</p>
-            </div>
-          ) : selfCreated && taskStatus === "submitted" && task.band === "strong" && !score.stale ? (
-            <div className="ai-self-complete" role="status">
-              <div>
-                <strong>The AI says this work is done</strong>
-                <p>Fresh Strong score. You can close this self-created task without a manager review.</p>
-              </div>
-              <Button variant="primary" size="m" disabled={completing} onClick={() => void markDone()}>
-                {completing ? "Marking done…" : "Mark as done"}
-              </Button>
-            </div>
-          ) : selfCreated && taskStatus === "submitted" && (!task || task.band !== "strong" || score.stale) ? (
-            <div className="ai-self-complete ai-self-complete--muted">
-              <strong>Not done yet</strong>
-              <p>Fix what the report lists, then submit again for a fresh Strong score.</p>
-            </div>
-          ) : null}
-
           <nav className="air-tabs" role="tablist" aria-label="Report sections">
             {TABS.map((t) => (
               <button

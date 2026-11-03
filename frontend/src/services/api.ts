@@ -239,6 +239,10 @@ export async function deleteTask(taskId: string): Promise<void> {
   await backendRequest<void>(`/tasks/${enc(taskId)}`, { method: "DELETE" });
 }
 
+export function reopenTask(taskId: string): Promise<Task> {
+  return backendRequest<Task>(`/tasks/${enc(taskId)}/reopen`, { method: "POST" });
+}
+
 /* ---------- Requirements ---------- */
 
 export async function listRequirements(taskId: string): Promise<Requirement[]> {

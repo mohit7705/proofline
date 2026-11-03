@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models import (
     AuditEvent,
     Evidence,
@@ -17,6 +18,7 @@ from app.models import (
 )
 from app.services.audit import record_event
 from app.services.evidence_phases import gap_text, phase_gaps
+from app.services.scoring import latest_score_set
 from app.services.tasks import get_task, list_tasks
 from app.services.verification_engine import run_verification
 from app.services.work_orders import get_work_order
@@ -152,6 +154,52 @@ def submit_task(db: Session, task: Task, user: User) -> Task:
     db.commit()
     db.refresh(task)
     return task
+
+
+def self_complete_if_ready(db: Session, task: Task, user: User) -> bool:
+    """Approve a worker's own work when the AI score is high enough."""
+    settings = get_settings()
+    order = task.work_order
+
+    def skip(reason: str) -> bool:
+        logger.info("Self-approval skipped for task %s: %s", task.id, reason)
+        return False
+
+    if not settings.self_approve_enabled:
+        return skip("turned off")
+    if user.role != "worker" or not (order.is_self_created and order.created_by == user.id):
+        return skip("not the worker's own work")
+    if task.status != "submitted":
+        return skip(f"status is {task.status}")
+    score = latest_score_set(db, task)
+    if not score.scored or score.task is None or score.task.score is None:
+        return skip("no task score")
+    if any(item.score is None for item in score.items):
+        return skip("an item could not be scored")
+    if score.task.score < settings.self_approve_min_score:
+        return skip(f"score {score.task.score} is below {settings.self_approve_min_score}")
+
+    task.status = "approved"
+    record_event(
+        db,
+        user.id,
+        "task",
+        task.id,
+        "task.self_completed",
+        {
+            "from": "submitted",
+            "to": "approved",
+            "basis": "ai_score",
+            "auto": True,
+            "score": score.task.score,
+            "min_score": settings.self_approve_min_score,
+            "model": score.model_name,
+        },
+    )
+    roll_up_work_order(db, order, user.id)
+    db.commit()
+    logger.info("Task %s approved automatically with score %s", task.id, score.task.score)
+    return True
 
 
 def list_reviews(db: Session, task: Task) -> list[ReviewDecision]:

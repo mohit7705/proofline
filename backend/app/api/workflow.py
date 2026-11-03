@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api import ai_jobs
 from app.api.auth import CurrentUser, require_roles
+from app.core.config import get_settings
 from app.core.dependencies import get_db
 from app.models import User
 from app.schemas.evidence import EvidenceResponse
@@ -61,12 +62,20 @@ def complete_own_work(task_id: uuid.UUID, db: DbSession, user: Submitter):
     if task.status != "submitted":
         raise HTTPException(status_code=409, detail="Submit the task for the AI check first")
     score = latest_score_set(db, task)
-    if not score.scored or score.stale or score.task is None or score.task.band != "strong":
+    minimum = get_settings().self_approve_min_score
+    if (
+        not score.scored
+        or score.stale
+        or score.task is None
+        or score.task.score is None
+        or score.task.score < minimum
+        or any(item.score is None for item in score.items)
+    ):
         raise HTTPException(
             status_code=409,
             detail=(
-                "The AI has not said this work is done. It needs a fresh Strong "
-                "score (85 or more). Fix what the report lists and submit again."
+                "The AI has not said this work is done. It needs a fresh score "
+                f"({minimum} or more). Fix what the report lists and submit again."
             ),
         )
     task.status = "approved"
@@ -83,6 +92,34 @@ def complete_own_work(task_id: uuid.UUID, db: DbSession, user: Submitter):
             "score": score.task.score,
             "model": score.model_name,
         },
+    )
+    roll_up_work_order(db, order, user.id)
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+@router.post("/tasks/{task_id}/reopen", response_model=TaskResponse)
+def reopen_own_work(task_id: uuid.UUID, db: DbSession, user: Submitter):
+    """Take back a submitted self-created task so it can be fixed."""
+    task = get_task_for_user(db, task_id, user)
+    order = task.work_order
+    if user.role != "worker" or not (order.is_self_created and order.created_by == user.id):
+        raise HTTPException(
+            status_code=403, detail="Only work you created yourself can be reopened"
+        )
+    if task.status != "submitted":
+        raise HTTPException(
+            status_code=409, detail="Only a task that is waiting for review can be reopened"
+        )
+    task.status = "in_progress"
+    record_event(
+        db,
+        user.id,
+        "task",
+        task.id,
+        "task.reopened",
+        {"from": "submitted", "to": "in_progress"},
     )
     roll_up_work_order(db, order, user.id)
     db.commit()

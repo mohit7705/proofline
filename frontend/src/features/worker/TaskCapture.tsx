@@ -11,7 +11,7 @@ import { RoleBadge } from "../../components/ui/RoleBadge";
 import { coverageFor, mergeEvidence, unmetRequirements } from "../../lib/evidence";
 import { formatBytes, pluralize } from "../../lib/format";
 import { TASK_STATUS } from "../../lib/status";
-import { ApiError, deleteEvidence, errorMessage, submitTaskForReview } from "../../services/api";
+import { ApiError, deleteEvidence, errorMessage, reopenTask, submitTaskForReview } from "../../services/api";
 import type { Evidence, Location, Role, WorkerTask } from "../../types";
 import { useTaskRecord } from "../review/useTaskRecord";
 import { locationLabel } from "../work-orders/LocationFields";
@@ -222,6 +222,16 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
   const hasReport = approved || withSubmission || reportKey > 0;
   const submitLabel = submitting ? "Submitting…" : queue.pendingCount > 0 ? "Uploading…" : "Submit for review";
 
+  async function reopen() {
+    try {
+      await reopenTask(task.id);
+      notify("Reopened. Fix the items in the report, then submit again.");
+      onSubmitted();
+    } catch (err) {
+      setSubmitNote({ tone: "fail", text: errorMessage(err, "Could not reopen this task.") });
+    }
+  }
+
   return (
     <section className="panel capture" aria-labelledby="cap-title">
       <header className="capture-head">
@@ -276,9 +286,11 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
             requirements={requirements}
             refreshKey={reportKey}
             startNote={aiNote}
+            quiet={!(locked || reportKey > 0)}
             selfCreated={Boolean(order.is_self_created)}
             taskStatus={task.status}
-            onCompleted={onSubmitted}
+            onScoreChanged={onSubmitted}
+            onReopen={() => void reopen()}
           />
         ) : (
           <div className="air-allgood">
