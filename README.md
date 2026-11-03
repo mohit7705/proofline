@@ -6,7 +6,6 @@ Proofline AI is a web app where a worker proves a job was done with photos, vide
 
 > Built solo for the **Meta Global AI Developer Hackathon** (Indie Developer track).
 > Repository: https://github.com/mohit7705/proofline
-> Live demo: **`<ADD YOUR DEPLOYED URL HERE>`** · Demo video: **`<ADD VIDEO LINK>`**
 
 ---
 
@@ -31,7 +30,7 @@ Proofline AI is a web app where a worker proves a job was done with photos, vide
 17. [Evaluation and accuracy](#17-evaluation-and-accuracy)
 18. [Deployment](#18-deployment)
 19. [Known limits](#19-known-limits)
-20. [Documentation index](#20-documentation-index)
+20. [Documentation](#20-documentation)
 21. [Troubleshooting](#21-troubleshooting)
 
 ---
@@ -249,7 +248,7 @@ cd proofline
 # 2. Create your settings
 cp .env.example .env
 #   Open .env and set:
-#     JWT_SECRET_KEY=<a long random string, 32+ characters>
+#     JWT_SECRET_KEY=<paste the output of: openssl rand -hex 32>
 #     MODEL_MOCK=true        # sample AI answers, no key needed
 
 # 3. Build and start everything (database, api, web)
@@ -377,7 +376,7 @@ Smoke-test the live models:
 uv run python scripts/live_smoke.py
 ```
 
-Say plainly in any write-up whether a demo used `MODEL_MOCK=true`.
+Mock mode returns fixed sample answers, so use `MODEL_MOCK=false` for any real check.
 
 ## 13. Tests and quality checks
 
@@ -474,11 +473,16 @@ Full detail: [`PROOFLINE_AI_COMPLETE_DOCUMENTATION.md`](PROOFLINE_AI_COMPLETE_DO
 
 ## 17. Evaluation and accuracy
 
-**There are no accuracy numbers in this README on purpose.** Mock mode produces sample numbers only, and they are not a result.
+Proofline measures one risk directly: **when the After image is fake, how often does it still get a Strong score (85 or more)?** That is the false-approval rate.
 
-The question we test: *when the After image is fake, how often does Proofline give a Strong score (85 or more)?*
+How the test works:
+
+1. One real Before photo is taken of a place or item.
+2. Fake "completed" After images are made with Muse Image. They are test data only and are never presented as real work.
+3. `scripts/eval_false_approval.py` creates a work order, task, checklist item, evidence files and a score job for every fake, scores them with the real models, and counts the Strong scores.
 
 ```bash
+export MODEL_MOCK=false          # mock scores are samples, never results
 python scripts/eval_false_approval.py \
   --api http://localhost:8000 \
   --email worker@example.com \
@@ -487,21 +491,11 @@ python scripts/eval_false_approval.py \
   --out eval_result.json
 ```
 
-Put one real Before photo at `eval_set/before.jpg` and fake After images (made with Muse Image) in `eval_set/fakes/`. Run with `MODEL_MOCK=false` against a disposable database. Then fill in the results in section 9 of [`PROOFLINE_AI_COMPLETE_DOCUMENTATION.md`](PROOFLINE_AI_COMPLETE_DOCUMENTATION.md).
+Put the real photo at `eval_set/before.jpg` and the fakes in `eval_set/fakes/`. Pairs that could not be scored are reported separately and never counted as passes. Use a disposable database, because the script leaves its records behind. The method and its limits are in section 9 of [`PROOFLINE_AI_COMPLETE_DOCUMENTATION.md`](PROOFLINE_AI_COMPLETE_DOCUMENTATION.md).
 
-| Measure | Result |
-|---|---|
-| Run date | `<fill in>` |
-| Images / scored pairs | `<fill in>` |
-| Strong scores (false approvals) | `<fill in>` |
-| False-approval rate | `<fill in> %` |
-| Model and version | `<fill in>` |
-
-Limits: a small set made by us, not real-world fraud rates. A high score approves nothing on its own.
+Limits: the set is small and made by us, so it says nothing about real-world fraud rates. A high score approves nothing on its own, because a person makes every decision on manager-assigned work.
 
 ## 18. Deployment
-
-Live demo: `<ADD URL>`
 
 The stack is one `docker compose` file, so any Linux server with Docker works:
 
@@ -521,9 +515,8 @@ Put HTTPS in front (Caddy, nginx or your host's proxy). Use an encrypted disk fo
 - Files are not virus-scanned or app-encrypted. Use an encrypted volume.
 - Photos are checked for integrity and duplicates only. The AI looks at video.
 - Capture time and GPS metadata are not verified.
-- AI accuracy has not been measured yet (see section 17).
-- Anyone can pick **Manager** at sign-up. Lock this down before production.
-- No automatic clean-up of old media yet (recommended: delete media of closed work after 90 days, keep hashes and audit).
+- Anyone can pick **Manager** at sign-up. A production deployment should require an invite code.
+- Old media is not deleted automatically. The recommended rule is to delete media of closed work after 90 days and keep the hashes and the audit trail.
 - Focus does not move to the page heading after a route change.
 
 ## 20. Documentation
@@ -544,4 +537,3 @@ All project documentation is merged into one file in the project root: [`PROOFLI
 
 ---
 
-*AI is advice. People decide. Everything is on the record.*

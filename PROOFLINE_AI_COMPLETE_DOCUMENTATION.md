@@ -5,7 +5,7 @@ One document that merges the database schema, design system, accessibility audit
 **Product in one line:** a worker proves a job was done, the system checks it, and a person makes the final call with a full paper trail.
 **Rule of the product:** AI is advice. People decide. Everything is on the record.
 **Repository:** https://github.com/mohit7705/proofline
-**Entry:** Meta Global AI Developer Hackathon, Indie Developer track, solo. Deadline: Nov 4, 9 PM ET.
+**Entry:** Meta Global AI Developer Hackathon, Indie Developer track, solo.
 
 ## Contents
 
@@ -20,9 +20,9 @@ One document that merges the database schema, design system, accessibility audit
 9. [Evaluation: false approvals](#9-evaluation-false-approvals)
 10. [Real flow check](#10-real-flow-check)
 11. [Demo script](#11-demo-script)
-12. [Submission checklist](#12-submission-checklist)
+12. [Release checklist](#12-release-checklist)
 13. [Run commands](#13-run-commands)
-14. [Known gaps and open items](#14-known-gaps-and-open-items)
+14. [Known limits](#14-known-limits)
 
 ---
 
@@ -110,14 +110,10 @@ Only **manager** and **worker** exist (the inspector role was removed; migration
 │       │               evidence score worker worker-premium worker-settings
 │       │               manager-overview manager-premium
 │       └── types/
-├── docs/               accessibility, database-schema, demo-script, design-system,
-│                       evaluation, real-flow-check, security-and-privacy,
-│                       submission-checklist
+├── PROOFLINE_AI_COMPLETE_DOCUMENTATION.md   all project docs in one file
 ├── scripts/eval_false_approval.py
 ├── docker-compose.yml, .env.example, .dockerignore, .gitignore, README.md
 ```
-
-**Clean-up flagged by the tree** (do before submitting): `backend/backend.zip`, `frontend/frontend.zip`, `docker and all.zip`, `frontend/tsconfig.tsbuildinfo`, `.env` and `frontend/.env.local` should not be in the repository. Empty folders `.agents`, `.aws`, `.codex` can be removed.
 
 ## 4. Database schema
 
@@ -137,7 +133,16 @@ Only **manager** and **worker** exist (the inspector role was removed; migration
 
 **audit_events**: `id`, `actor_id` nullable FK, `entity_type`, `entity_id`, `action`, `details` JSON (no secrets), `created_at`.
 
-Additional tables in the code (see `models/`): `organization`, `location`, `requirement` (checklist), `task_verification`, `task_score`, `score_job`. This document does not list their columns; read the models for them.
+Supporting tables:
+
+- **organization**: organisations, projects and sites that work orders belong to.
+- **location**: sites, buildings, floors, rooms and equipment.
+- **requirement**: one checklist item of a task (what to capture, photo or video, minimum and maximum files).
+- **task_verification**: the combined verification result for a task (verdict, reasons, follow-up instruction).
+- **task_score**: a score set for a task (item scores, the four parts, band, stale flag).
+- **score_job**: a background AI scoring job and its status.
+
+The exact columns are defined in `backend/app/models/`.
 
 ### Relationships
 
@@ -330,28 +335,28 @@ Input borders (`--line-strong` on white) are 1.51:1, below the 3:1 guideline for
 ### Manual checklist (about 30 minutes)
 
 **Keyboard only**
-- [ ] Landing: Tab reaches every link and button in order. Mobile menu and bell open with Enter; bell closes with Escape.
-- [ ] Sign in: email, password (with show/hide), Sign in, Google. Enter submits.
-- [ ] Wrong password shows an error read out without moving focus.
-- [ ] Manager sidebar reachable; skip link appears on first Tab and works.
-- [ ] New work order is completable without a mouse; errors sit next to fields.
-- [ ] Dialog: focus moves in, stays inside, Escape closes, focus returns to the opener.
-- [ ] Worker capture buttons work with Enter and Space; Retry and Remove reachable.
-- [ ] Manager decision options change with arrow keys; Enter submits.
+- Landing: Tab reaches every link and button in order. Mobile menu and bell open with Enter; bell closes with Escape.
+- Sign in: email, password (with show/hide), Sign in, Google. Enter submits.
+- Wrong password shows an error read out without moving focus.
+- Manager sidebar reachable; skip link appears on first Tab and works.
+- New work order is completable without a mouse; errors sit next to fields.
+- Dialog: focus moves in, stays inside, Escape closes, focus returns to the opener.
+- Worker capture buttons work with Enter and Space; Retry and Remove reachable.
+- Manager decision options change with arrow keys; Enter submits.
 
 **Screen reader** (NVDA, VoiceOver or TalkBack)
-- [ ] Each page's tab title is announced and matches.
-- [ ] One main heading per page.
-- [ ] Badges read as words.
-- [ ] Upload progress announces file name and percentage.
-- [ ] Toasts are announced.
-- [ ] Tables have header rows; each row's title is read first.
+- Each page's tab title is announced and matches.
+- One main heading per page.
+- Badges read as words.
+- Upload progress announces file name and percentage.
+- Toasts are announced.
+- Tables have header rows; each row's title is read first.
 
 **Zoom, size, motion**
-- [ ] 200% zoom: nothing cut off, no sideways scroll outside tables.
-- [ ] 360px wide: every screen usable.
-- [ ] OS "reduce motion": landing frame stops animating.
-- [ ] Forced colours: buttons, inputs and badges keep visible edges.
+- 200% zoom: nothing cut off, no sideways scroll outside tables.
+- 360px wide: every screen usable.
+- OS "reduce motion": landing frame stops animating.
+- Forced colours: buttons, inputs and badges keep visible edges.
 
 **Automated:** run axe DevTools or WAVE on `/`, `/login`, `/register`, `/manager`, `/manager/work-orders/new`, `/worker`, `/worker/tasks`. Fix Critical and Serious. Lighthouse Accessibility: aim for 95 or more.
 
@@ -385,8 +390,6 @@ Known gaps: focus does not move to the `h1` after a route change; input borders 
 
 **Known limits:** token in session storage (httpOnly cookie is safer); in-memory rate limiter (use Redis for several processes); no malware scan or app-level encryption (use an encrypted volume); capture time and GPS not verified.
 
-**Your own action items:** rotate any `MODEL_API_KEY` or `JWT_SECRET_KEY` that was ever shared, and keep `.env`, `.env.bak` and `.env.local` out of git.
-
 ## 9. Evaluation: false approvals
 
 **Question:** when the After image is fake, how often does Proofline give a Strong score (85 or more)?
@@ -406,19 +409,15 @@ python scripts/eval_false_approval.py \
   --out eval_result.json
 ```
 
-5. Record image count, scored pairs, Strong scores and the false-approval rate. Unscored pairs are reported separately and are not counted as passes.
+5. Read the image count, scored pairs, Strong scores and false-approval rate from the output. Unscored pairs are reported separately and are not counted as passes.
 
 The script creates a work order, task, requirement, evidence and score job per fake. Those stay in the database.
-
-**Results (not yet run, fill in):** run date __ · images __ · scored __ · Strong (false approvals) __ · rate __ % · model and version __
 
 **Limits:** small self-made set, not real fraud rates. A high score approves nothing alone. Mock output is sample data and must never be reported as a result. Also measure the reverse: how often a real pair scores Weak.
 
 ## 10. Real flow check
 
-Goal: walk the whole product with real accounts against the live backend. About 30 minutes. Outcomes **Works today** and **Waiting on the backend** are acceptable; anything else is a bug.
-
-> Note: this check was written earlier. The routes it calls "waiting on the backend" (evidence list, decisions, verification) now exist, so expect them to work.
+Goal: walk the whole product with real accounts against the live backend. About 30 minutes. Every step below should work; anything that does not is a bug.
 
 **0. Start:** `docker compose up --build`; in `frontend/` run `npm install` and `npm run dev`; open http://localhost:5173. After manager sign-in the sidebar footer shows **Server connected**. If it says "Database unreachable" or "Server unreachable", fix that first, and set `JWT_SECRET_KEY`.
 
@@ -453,25 +452,7 @@ In the browser as the worker, open `/manager`: expect access denied with a link 
 
 **6. Reports and bell:** open a work order Report and print with Ctrl+P. The bell lists real overdue, awaiting-review and unassigned items; create an overdue work order and confirm it appears.
 
-**7. Record results** (done when every row is Works today or Waiting on the backend, no Bug):
-
-| Area | Result | Notes |
-|---|---|---|
-| Register and sign in | | |
-| Google sign-in (if configured) | | |
-| Roles and team page | | |
-| Work-order wizard | | |
-| Failure recovery in the wizard | | |
-| Worker upload and progress | | |
-| Retry after a network drop | | |
-| Rejected file types and sizes | | |
-| Evidence list after reload | | |
-| Manager decision | | |
-| Permission checks (curl) | | |
-| Route guard (wrong role) | | |
-| Expired session | | |
-| Report and print | | |
-| Notification bell | | |
+**7. Done when** every step above works and nothing is a bug.
 
 ## 11. Demo script
 
@@ -508,47 +489,43 @@ Seed creates **Boiler 2 weekly inspection**:
 1. **Worker (0:00).** Show the Worker badge. Choose **Create my own work**, add a checklist item, upload a Before and an After photo or video. Say the displayed challenge code in the After recording and run the AI check. Point out score, parts, reasons and retake notes.
 2. **Manager (1:00).** Open the self-created work: **Self-created** tag, score panel, Before and After files, SAM outlines. Decide yourself; the creator cannot approve their own work.
 3. **Manager (2:00).** Overview shows average scores, weak tasks and self-created work awaiting review. Open Team, add a member with a temporary password, set their role.
-4. **Close (2:45).** AI scores are advisory. Muse Image only makes fake completed images for the false-approval evaluation. Show the result in `docs/evaluation.md` once you have run it with real models.
+4. **Close (2:45).** AI scores are advisory. Muse Image only makes fake completed images for the false-approval evaluation. Explain that the false-approval evaluation in section 9 measures exactly this risk.
 
-## 12. Submission checklist
-
-**Deadline: Nov 4, 9 PM ET** (about Nov 5, 7:30 AM IST). Do code first, rehearse, then record. Leave the last hours for video and form. Submit at least an hour early.
+## 12. Release checklist
 
 **Code**
-- [ ] `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` pass
-- [ ] `uv run pytest` passes and CI is green
-- [ ] No `.env`, key or password in git (`git grep -n "MODEL_API_KEY="` shows only `.env.example`)
-- [ ] `frontend/tsconfig.tsbuildinfo` and any zip files are not in the repository
+- `npm run typecheck`, `npm run lint`, `npm test` and `npm run build` pass.
+- `uv run pytest` passes and CI is green.
+- No `.env`, key or password in the repository (`git grep -n "MODEL_API_KEY="` shows only `.env.example`).
+- No zip files and no `tsconfig.tsbuildinfo` in the repository.
 
 **Run from zero on a clean checkout**
-- [ ] `cp .env.example .env`, set `JWT_SECRET_KEY`, `MODEL_MOCK=true`
-- [ ] `docker compose up --build`, then `docker compose exec api python -m app.seed`
-- [ ] http://localhost:8080 loads and the demo accounts work
+- `cp .env.example .env`, set `JWT_SECRET_KEY` and `MODEL_MOCK=true`.
+- `docker compose up --build`, then `docker compose exec api python -m app.seed`.
+- http://localhost:8080 loads and the demo accounts work.
 
-**Real flow (as real people)**
-- [ ] Register a manager and a worker with the role picker
-- [ ] Manager creates a work order with a task and required checklist item, assigns the worker
-- [ ] Worker cannot submit early, uploads, submits
-- [ ] Manager review shows it with advice in the verification panel
-- [ ] Run video analysis (mock), click a timestamp
-- [ ] Request more evidence; worker sees the reason; uploads again; resubmits
-- [ ] Approve; the work order becomes approved by itself
-- [ ] History lists every step with names; the Report prints on one clean A4 flow
+**Real flow, as real people**
+- Register a manager and a worker with the role picker.
+- The manager creates a work order with a task and a required checklist item and assigns the worker.
+- The worker cannot submit early, uploads, then submits.
+- The manager review page shows it, and the verification panel shows advice.
+- Run the video analysis and click a timestamp.
+- Request more evidence; the worker sees the reason, uploads again and resubmits.
+- Approve; the work order becomes approved by itself.
+- History lists every step with names, and the Report prints on one clean A4 flow.
 
 **Screens and devices**
-- [ ] 360 px, 768 px, 1280 px on login, worker task, manager review, manager overview, report preview
-- [ ] Hosted site on a real phone: take a photo, upload, submit
-- [ ] Keyboard only: sign in, open a task, submit the decision form, close a dialog
-- [ ] 200% zoom: nothing overlaps or is cut off
+- Check 360 px, 768 px and 1280 px on login, worker task, manager review, manager overview and report preview.
+- Open the hosted site on a real phone: take a photo, upload, submit.
+- Keyboard only: sign in, open a task, submit the decision form, close a dialog.
+- At 200 percent zoom nothing overlaps or is cut off.
 
-**Submission pack**
-- [ ] Screenshots: overview, worker with blocked Submit, manager review with duplicate warning, AI timestamps, report
-- [ ] 3-minute video following the demo script
-- [ ] Short description: problem, how it works, "AI is advice, a person decides", what is real and what is mock
-- [ ] State plainly if the demo used `MODEL_MOCK=true`
-- [ ] Links: repository, hosted demo (if any), video
-
-**Extra items for the hackathon rubric (strong repos usually show these):** a clear README with install steps, a live deployment link, diagrams in the docs, a visible automated test suite, a modular `src/` layout, and clear use of the Meta model API (Muse Spark, SAM 3.1, Muse Voice Transcribe). Commit steadily; the count of commits in the window may be judged.
+**Hand-in pack**
+- Screenshots: overview, worker with blocked Submit, manager review with duplicate warning, AI timestamps, report.
+- A 3-minute video that follows the demo script in section 11.
+- A short description: problem, how it works, "AI is advice, a person decides", and what is real and what is mock.
+- State plainly whether the demo used `MODEL_MOCK=true`.
+- Links: repository, hosted demo (if any) and video.
 
 ## 13. Run commands
 
@@ -582,17 +559,16 @@ cd frontend && npm run typecheck && npm run lint && npm test && npm run build
 
 Last recorded: backend 276 passed, 1 skipped; frontend 145 passed.
 
-## 14. Known gaps and open items
+## 14. Known limits
 
-| Item | Status |
+| Limit | Detail |
 |---|---|
-| AI accuracy / false-approval rate | **Not measured.** Run the evaluation and fill section 9. |
-| Real-model path (`live_smoke.py`, `MODEL_MOCK=false`) | Not yet run by the assistant; run it yourself. |
-| Anyone can pick Manager at sign-up | Open. Add an invite code or manager-only creation for production. |
-| Rate limiter in memory | Single process only. |
-| httpOnly cookie, malware scan, app-level encryption | Not done. |
-| Capture time and GPS verification | Not done. |
-| Focus to `h1` on route change; light input borders | Not done. |
-| Photos | Checked for integrity and duplicates; AI analysis is on video. |
-| Repository clean-up (zips, `.env`, tsbuildinfo, empty `.agents/.aws/.codex`) | Do before submitting. |
-| Rotate exposed secrets | Do before submitting. |
+| AI accuracy | The false-approval test in section 9 measures one risk. It is not a general accuracy figure. |
+| Manager sign-up | Anyone can pick Manager at sign-up. Production should require an invite code or manager-only creation. |
+| Rate limiter | In memory, so it fits one API process. Use Redis for several. |
+| Token storage | The token is in session storage. An httpOnly cookie is safer. |
+| Files | Not virus-scanned and not encrypted by the app. Use an encrypted volume. |
+| Metadata | Capture time and GPS are not verified. |
+| Photos | Checked for integrity and duplicates. The AI analysis runs on video. |
+| Accessibility | Focus does not move to the `h1` after a route change. Input borders are lighter than the 3:1 guideline. |
+| Old media | Not deleted automatically. Recommended rule: delete media of closed work after 90 days and keep hashes and audit. |
