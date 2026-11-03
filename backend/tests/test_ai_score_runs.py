@@ -1,4 +1,4 @@
-"""v2 step 2: the AI score (mock AI, no network)."""
+"""The AI score (mock AI, no network)."""
 
 import shutil
 import uuid
@@ -19,7 +19,7 @@ from app.services.score_parts import (
 )
 from conftest import auth
 from test_hardening_and_ai import make_video_file, mock_ai  # noqa: F401 (fixture)
-from test_v2_step1 import new_user, upload_phase
+from test_self_work_roles_and_challenge import new_user, upload_phase
 from test_verification_engine import make_task, verification
 
 

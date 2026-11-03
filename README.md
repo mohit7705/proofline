@@ -166,3 +166,8 @@ Be careful with numbers here.
 - `docs/security-and-privacy.md`: protections, data retention, known limits
 - `docs/demo-script.md`: the 3-minute demo
 - `frontend/BACKEND_CONTRACT.md`: routes the frontend expects
+
+
+set -a; source ../.env; set +a
+uv run alembic upgrade head  
+uv run uvicorn app.main:app --reload --port 8000

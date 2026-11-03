@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { formatBytes, relativeTime } from "../../lib/format";
 import { integrityMeta, videoFacts } from "../../lib/evidence";
 import type { Evidence, Requirement } from "../../types";
@@ -9,9 +10,10 @@ interface Props {
   requirements?: Requirement[];
   selectedId?: string | null;
   onSelect?: (evidence: Evidence) => void;
+  renderActions?: (evidence: Evidence) => ReactNode;
 }
 
-export function EvidenceList({ evidence, requirements = [], selectedId, onSelect }: Props) {
+export function EvidenceList({ evidence, requirements = [], selectedId, onSelect, renderActions }: Props) {
   const titleFor = (id: string | null) => requirements.find((r) => r.id === id)?.title;
 
   return (
@@ -37,7 +39,7 @@ export function EvidenceList({ evidence, requirements = [], selectedId, onSelect
           </>
         );
         return (
-          <li key={e.id}>
+          <li key={e.id} className={renderActions ? "evidence-item-actions" : undefined}>
             {onSelect ? (
               <button
                 type="button"
@@ -50,6 +52,7 @@ export function EvidenceList({ evidence, requirements = [], selectedId, onSelect
             ) : (
               <div className="evidence-row">{body}</div>
             )}
+            {renderActions ? <div className="evidence-actions">{renderActions(e)}</div> : null}
           </li>
         );
       })}

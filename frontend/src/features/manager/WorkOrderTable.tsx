@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Icon } from "../../components/ui/Icon";
 import { StatusBadge } from "../../components/ui/StatusBadge";
 import { formatDate, relativeTime } from "../../lib/format";
 import { isOverdue, WORK_ORDER_STATUS } from "../../lib/status";
@@ -11,9 +12,12 @@ interface Props {
 
 export function WorkOrderTable({ orders, assigneeName }: Props) {
   return (
-    <div className="table-wrap">
-      <table className="table">
-        <caption className="sr-only">Work orders, their status, assignee and due date</caption>
+    <div className="manager-work-orders__table-wrap">
+      <table className="table manager-work-orders__table">
+        <caption className="sr-only">
+          Work orders, status, assigned worker, due date, last update, and actions
+        </caption>
+
         <thead>
           <tr>
             <th scope="col">Work order</th>
@@ -21,29 +25,96 @@ export function WorkOrderTable({ orders, assigneeName }: Props) {
             <th scope="col">Assigned to</th>
             <th scope="col">Due</th>
             <th scope="col">Updated</th>
+            <th scope="col" className="manager-work-orders__actions-heading">
+              Actions
+            </th>
           </tr>
         </thead>
+
         <tbody>
-          {orders.map((o) => {
-            const meta = WORK_ORDER_STATUS[o.status];
-            const overdue = isOverdue(o);
+          {orders.map((order) => {
+            const status = WORK_ORDER_STATUS[order.status];
+            const overdue = isOverdue(order);
+            const detailPath = `/manager/work-orders/${order.id}`;
+
             return (
-              <tr key={o.id}>
+              <tr key={order.id}>
                 <th scope="row">
-                  <Link to={`/manager/work-orders/${o.id}`} className="table-link">
-                    {o.title}
-                  </Link>
-                  <span className="table-meta table-clamp">{o.description}</span>
+                  <div className="manager-work-orders__order-cell">
+                    <span
+                      className="manager-work-orders__order-icon"
+                      aria-hidden="true"
+                    >
+                      <Icon name="clipboard" size={18} />
+                    </span>
+                    <span className="manager-work-orders__order-copy">
+                      <Link
+                        to={detailPath}
+                        className="manager-work-orders__order-title"
+                      >
+                        {order.title}
+                      </Link>
+                      <span className="manager-work-orders__order-description">
+                        {order.description || "No description provided"}
+                      </span>
+                    </span>
+                  </div>
                 </th>
+
                 <td>
-                  <StatusBadge label={meta.label} tone={meta.tone} />
+                  <StatusBadge label={status.label} tone={status.tone} />
                 </td>
-                <td className={o.assigned_to ? "" : "muted"}>{assigneeName(o.assigned_to)}</td>
+
                 <td>
-                  <span className="num">{formatDate(o.due_at)}</span>
-                  {overdue ? <span className="chip chip-fail">Overdue</span> : null}
+                  <span
+                    className={`manager-work-orders__assignee ${
+                      order.assigned_to ? "" : "is-unassigned"
+                    }`}
+                  >
+                    <span className="manager-work-orders__assignee-avatar">
+                      {order.assigned_to
+                        ? assigneeName(order.assigned_to)
+                            .trim()
+                            .split(/\s+/)
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join("")
+                            .toUpperCase()
+                        : "—"}
+                    </span>
+                    <span>{assigneeName(order.assigned_to)}</span>
+                  </span>
                 </td>
-                <td className="muted">{relativeTime(o.updated_at)}</td>
+
+                <td>
+                  <span className="manager-work-orders__due">
+                    <Icon name="calendar" size={15} />
+                    <span>{formatDate(order.due_at)}</span>
+                  </span>
+                  {overdue ? (
+                    <span className="manager-work-orders__overdue">
+                      Overdue
+                    </span>
+                  ) : null}
+                </td>
+
+                <td>
+                  <span className="manager-work-orders__updated">
+                    <Icon name="clock" size={15} />
+                    {relativeTime(order.updated_at)}
+                  </span>
+                </td>
+
+                <td className="manager-work-orders__actions-cell">
+                  <Link
+                    to={detailPath}
+                    className="manager-work-orders__view-action"
+                    aria-label={`View work order: ${order.title}`}
+                    title="View work order"
+                  >
+                    <Icon name="eye" size={17} />
+                  </Link>
+                </td>
               </tr>
             );
           })}

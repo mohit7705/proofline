@@ -1,4 +1,4 @@
-"""Opt-in live PostgreSQL + real FFmpeg integration test for Step 6."""
+"""Opt-in live PostgreSQL + real FFmpeg integration test for video analysis."""
 
 import asyncio
 import hashlib
@@ -14,7 +14,7 @@ from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import Session
 
 
-def test_step6_real_database_and_video(monkeypatch):
+def test_real_database_and_video(monkeypatch):
     if os.getenv("PROOFLINE_LIVE_DB_TEST") != "1":
         pytest.skip("Set PROOFLINE_LIVE_DB_TEST=1 to run live integration test")
 
@@ -47,9 +47,9 @@ def test_step6_real_database_and_video(monkeypatch):
         from app.schemas.video_analysis import VideoAnalysisResult
         from app.services import video_verification
 
-        storage = tempfile.TemporaryDirectory(prefix="proofline-step6-")
+        storage = tempfile.TemporaryDirectory(prefix="proofline-live-")
         storage_dir = Path(storage.name)
-        video_path = storage_dir / "step6-integration.mp4"
+        video_path = storage_dir / "live-integration.mp4"
 
         subprocess.run(
             [
@@ -67,8 +67,8 @@ def test_step6_real_database_and_video(monkeypatch):
 
         token = uuid.uuid4().hex
         user = User(
-            email=f"step6-{token}@example.invalid",
-            full_name="Step 6 Integration Test",
+            email=f"live-{token}@example.invalid",
+            full_name="Live Integration Test",
             role="manager",
             is_active=True,
         )
@@ -77,7 +77,7 @@ def test_step6_real_database_and_video(monkeypatch):
         user_id = user.id
 
         work_order = WorkOrder(
-            title=f"Step 6 integration {token[:8]}",
+            title=f"Live integration {token[:8]}",
             description="Temporary automated integration test",
             created_by=user.id,
             status="open",
@@ -168,7 +168,7 @@ def test_step6_real_database_and_video(monkeypatch):
         print("PASS: SHA-256 integrity verification")
         print("PASS: Real FFmpeg JPEG frame extraction")
         print("PASS: VerificationRun and confidence persisted in PostgreSQL")
-        print("RESULT: STEP 6 LIVE MEDIA/DATABASE INTEGRATION PASSED")
+        print("RESULT: LIVE MEDIA/DATABASE INTEGRATION PASSED")
         print("NOTE: AI provider itself was mocked, not called live.")
 
     finally:

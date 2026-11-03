@@ -8,6 +8,11 @@ import { HowItWorksPage } from "../pages/HowItWorksPage";
 import { LandingPage } from "../pages/LandingPage";
 import { LoginPage } from "../pages/LoginPage";
 import { LocationsPage } from "../pages/manager/LocationsPage";
+import {
+  ManagerAIInsightsPage,
+  ManagerReportsPage,
+  ManagerSettingsPage,
+} from "../pages/manager/ManagerExtraPages";
 import { NewWorkOrderPage } from "../pages/manager/NewWorkOrderPage";
 import { OverviewPage } from "../pages/manager/OverviewPage";
 import { TeamPage } from "../pages/manager/TeamPage";
@@ -22,7 +27,7 @@ import { WorkerAIInsightsPage } from "../pages/worker/WorkerAIInsightsPage";
 import { WorkerEvidencePage } from "../pages/worker/WorkerEvidencePage";
 import { WorkerHistoryPage } from "../pages/worker/WorkerHistoryPage";
 import WorkerHelpPage from "../pages/worker/WorkerHelpPage";
-import WorkerSettingsPage from "../pages/worker/WorkerSettingsPage";
+import { WorkerSettingsPage } from "../pages/worker/WorkerSettingsPage";
 import type { Role } from "../types";
 
 /**
@@ -56,6 +61,9 @@ const routes: RouteObject[] = [
           { path: "work-orders/:orderId", element: <WorkOrderDetailPage /> },
           { path: "locations", element: <LocationsPage /> },
           { path: "team", element: <TeamPage /> },
+          { path: "reports", element: <ManagerReportsPage /> },
+          { path: "ai-insights", element: <ManagerAIInsightsPage /> },
+          { path: "settings", element: <ManagerSettingsPage /> },
         ],
       },
       {

@@ -13,6 +13,7 @@ import "./styles/dashboard.css";
 import "./styles/score.css";
 import "./styles/worker.css";
 import "./styles/worker-premium.css";
+import "./styles/worker-settings.css";
 import "./styles/landing3d.css";
 
 createRoot(document.getElementById("root")!).render(

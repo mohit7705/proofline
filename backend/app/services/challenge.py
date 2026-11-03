@@ -1,7 +1,7 @@
 """A short phrase the worker says on camera in the After video.
 
 Saying a fresh phrase makes it hard to reuse an old clip. The speech step in
-Step 2 compares what was said with this code.
+The AI voice check compares what was said with this code.
 """
 
 import secrets

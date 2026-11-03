@@ -9,6 +9,7 @@ import {
   getScore,
   getScoreAnalysis,
   getScoreJob,
+  completeOwnWork,
   listEvidence,
   startScoreRun,
 } from "../../services/api";
@@ -115,6 +116,14 @@ function collect(score: ScoreSet, retakeNotes: string[]) {
 }
 
 
+type Tab = "result" | "photos" | "checks" | "fix";
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: "result", label: "Result", icon: "eye" },
+  { id: "photos", label: "Photos", icon: "image" },
+  { id: "checks", label: "Checks", icon: "checkCircle" },
+  { id: "fix", label: "To fix", icon: "camera" },
+];
+
 const PART_ORDER = ["vision", "part", "code", "rules"] as const;
 const PART_ICON: Record<string, IconName> = { vision: "scan", part: "target", code: "mic", rules: "shield" };
 const PART_HINT: Record<string, string> = {
@@ -169,11 +178,17 @@ export function AiReport({
   requirements,
   refreshKey = 0,
   startNote = null,
+  selfCreated = false,
+  taskStatus,
+  onCompleted,
 }: {
   taskId: string;
   requirements: Requirement[];
   refreshKey?: number;
   startNote?: string | null;
+  selfCreated?: boolean;
+  taskStatus?: string;
+  onCompleted?: () => void;
 }) {
   const [files, setFiles] = useState<Evidence[]>([]);
   const [score, setScore] = useState<ScoreSet | null>(null);
@@ -181,7 +196,9 @@ export function AiReport({
   const [job, setJob] = useState<ScoreJob | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [tab, setTab] = useState<Tab>("result");
 
   const titles = Object.fromEntries(requirements.map((r) => [r.id, r.title]));
   const running = job?.status === "queued" || job?.status === "processing";
@@ -227,8 +244,22 @@ export function AiReport({
       } else {
         setMessage(errorMessage(error));
       }
+
     } finally {
       setStarting(false);
+    }
+  }
+
+  async function markDone() {
+    setCompleting(true);
+    setMessage(null);
+    try {
+      await completeOwnWork(taskId);
+      onCompleted?.();
+    } catch (error) {
+      setMessage(errorMessage(error));
+    } finally {
+      setCompleting(false);
     }
   }
 
@@ -325,42 +356,49 @@ export function AiReport({
               New files were added after this score. Run again.
             </p>
           ) : null}
+          {selfCreated && taskStatus === "approved" ? (
+            <div className="ai-self-complete" role="status">
+              <strong>Marked as done</strong>
+              <p>This self-created work was closed from its fresh Strong AI result.</p>
+            </div>
+          ) : selfCreated && taskStatus === "submitted" && task.band === "strong" && !score.stale ? (
+            <div className="ai-self-complete" role="status">
+              <div>
+                <strong>The AI says this work is done</strong>
+                <p>Fresh Strong score. You can close this self-created task without a manager review.</p>
+              </div>
+              <Button variant="primary" size="m" disabled={completing} onClick={() => void markDone()}>
+                {completing ? "Marking done…" : "Mark as done"}
+              </Button>
+            </div>
+          ) : selfCreated && taskStatus === "submitted" && (!task || task.band !== "strong" || score.stale) ? (
+            <div className="ai-self-complete ai-self-complete--muted">
+              <strong>Not done yet</strong>
+              <p>Fix what the report lists, then submit again for a fresh Strong score.</p>
+            </div>
+          ) : null}
 
-          <div className="air-media" aria-label="Before and after files">
-            <MyFiles files={files} />
-          </div>
+          <nav className="air-tabs" role="tablist" aria-label="Report sections">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`air-tab${tab === t.id ? " is-on" : ""}`}
+                onClick={() => setTab(t.id)}
+              >
+                <Icon name={t.icon} size={15} />
+                {t.label}
+                {t.id === "photos" ? <i>{files.length}</i> : null}
+                {t.id === "fix" && found.retakes.length > 0 ? <i className="is-alert">{found.retakes.length}</i> : null}
+              </button>
+            ))}
+          </nav>
 
-          <section aria-label="Checks">
-            <h4 className="air-h">How each check did</h4>
-            <ul className="air-checks">
-              {cards.map((part) => {
-                const tone = toneOf(part.score);
-                return (
-                  <li key={part.key} className={`air-check air-check--${tone}${weakest?.key === part.key ? " is-deciding" : ""}`}>
-                    <div className="air-check__head">
-                      <span className="air-check__icon">
-                        <Icon name={PART_ICON[part.key] ?? "info"} size={16} />
-                      </span>
-                      <span className={`air-pill air-pill--${tone}`}>{TONE_WORD[tone]}</span>
-                    </div>
-                    <p className="air-check__label">{part.label}</p>
-                    <p className="air-check__model">{partModel(part.key, models)} · {WEIGHT[part.key] ?? 0}% of score</p>
-                    <div className="air-check__score">
-                      <b>{part.score === null ? "–" : part.score}</b>
-                      <span>/ 100</span>
-                    </div>
-                    <span className="air-bar" aria-hidden="true">
-                      <span style={{ width: `${part.score ?? 0}%` }} />
-                    </span>
-                    <p className="air-check__detail">{part.detail || PART_HINT[part.key]}</p>
-                    {weakest?.key === part.key ? <span className="air-deciding">Decides the score</span> : null}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-
-          <div className="ai-findings">
+          {tab === "result" ? (
+            <div role="tabpanel" className="air-panel">
+              <div className="ai-findings">
             <section className="ai-findings__col ai-findings__col--ok" aria-label="What looks right">
               <h4><Icon name="checkCircle" size={15} /> What looks right</h4>
               {right.length > 0 ? (
@@ -395,19 +433,50 @@ export function AiReport({
               )}
             </section>
           </div>
-
-          {found.retakes.length > 0 ? (
-            <div className="air-redo" role="note">
-              <h4><Icon name="camera" size={16} /> What to redo</h4>
-              <ol>
-                {found.retakes.map((text) => (
-                  <li key={text}>{text}</li>
-                ))}
-              </ol>
             </div>
           ) : null}
 
-          <details className="air-more">
+          {tab === "photos" ? (
+            <div role="tabpanel" className="air-panel">
+              <div className="air-media" aria-label="Before and after files">
+            <MyFiles files={files} />
+          </div>
+            </div>
+          ) : null}
+
+          {tab === "checks" ? (
+            <div role="tabpanel" className="air-panel">
+              <section aria-label="Checks">
+            <h4 className="air-h">How each check did</h4>
+            <ul className="air-checks">
+              {cards.map((part) => {
+                const tone = toneOf(part.score);
+                return (
+                  <li key={part.key} className={`air-check air-check--${tone}${weakest?.key === part.key ? " is-deciding" : ""}`}>
+                    <div className="air-check__head">
+                      <span className="air-check__icon">
+                        <Icon name={PART_ICON[part.key] ?? "info"} size={16} />
+                      </span>
+                      <span className={`air-pill air-pill--${tone}`}>{TONE_WORD[tone]}</span>
+                    </div>
+                    <p className="air-check__label">{part.label}</p>
+                    <p className="air-check__model">{partModel(part.key, models)} · {WEIGHT[part.key] ?? 0}% of score</p>
+                    <div className="air-check__score">
+                      <b>{part.score === null ? "–" : part.score}</b>
+                      <span>/ 100</span>
+                    </div>
+                    <span className="air-bar" aria-hidden="true">
+                      <span style={{ width: `${part.score ?? 0}%` }} />
+                    </span>
+                    <p className="air-check__detail">{part.detail || PART_HINT[part.key]}</p>
+                    {weakest?.key === part.key ? <span className="air-deciding">Decides the score</span> : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+              <details className="air-more">
             <summary>
               Full breakdown per checklist item <Icon name="chevronDown" size={14} />
             </summary>
@@ -438,6 +507,31 @@ export function AiReport({
               ))}
             </div>
           </details>
+            </div>
+          ) : null}
+
+          {tab === "fix" ? (
+            <div role="tabpanel" className="air-panel">
+              {found.retakes.length > 0 ? (
+                <div className="air-redo" role="note">
+              <h4><Icon name="camera" size={16} /> What to redo</h4>
+              <ol>
+                {found.retakes.map((text) => (
+                  <li key={text}>{text}</li>
+                ))}
+              </ol>
+            </div>
+              ) : (
+                <div className="air-allgood">
+                  <Icon name="checkCircle" size={18} />
+                  <div>
+                    <strong>Nothing to redo</strong>
+                    <p>The AI did not ask for any new photos.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
         </>
       ) : !running && loaded ? (
         <div className="ai-empty-state">

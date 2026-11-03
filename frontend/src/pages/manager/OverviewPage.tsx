@@ -1,19 +1,18 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ButtonLink } from "../../components/ui/Button";
-import { Icon } from "../../components/ui/Icon";
-import { Card, CardHeader, PageHeader, Stat } from "../../components/ui/Primitives";
+import { Icon, type IconName } from "../../components/ui/Icon";
+import { Card } from "../../components/ui/Primitives";
 import { EmptyState, ErrorState } from "../../components/ui/States";
 import { Skeleton } from "../../components/ui/Spinner";
-import { StatusBadge } from "../../components/ui/StatusBadge";
 import { useAuth } from "../../features/auth/AuthContext";
 import { StatusDistribution } from "../../features/manager/StatusDistribution";
 import { ScoreOverview } from "../../features/manager/ScoreOverview";
-import { WorkOrderTable } from "../../features/manager/WorkOrderTable";
+import { PanelHeading } from "../../features/manager/PanelHeading";
 import { useLoad } from "../../hooks/useLoad";
 import { buildAttention, overviewNumbers } from "../../lib/dashboard";
-import { formatDate, relativeTime } from "../../lib/format";
-import { isDueSoon, WORK_ORDER_STATUS } from "../../lib/status";
+import { relativeTime } from "../../lib/format";
+import { WORK_ORDER_STATUS } from "../../lib/status";
 import {
   getDashboardSummary,
   listAllWorkOrders,
@@ -21,6 +20,7 @@ import {
   listUsers,
   type ManagedUser,
 } from "../../services/api";
+import "../../styles/manager-overview.css";
 
 async function loadOverview() {
   const [all, users, summary, notes] = await Promise.all([
@@ -40,91 +40,80 @@ export function OverviewPage() {
 
   const orders = useMemo(() => data?.orders ?? [], [data]);
   const now = data?.loadedAt ?? 0;
-  const nameOf = (id: string | null) =>
-    id ? (data?.users.find((u) => u.id === id)?.full_name ?? "Unknown user") : "Unassigned";
-
   const numbers = useMemo(() => overviewNumbers(data?.summary ?? null, orders, now), [data, orders, now]);
   const attention = useMemo(() => buildAttention(orders, data?.notes ?? null, now), [orders, data, now]);
 
-  const view = useMemo(() => {
-    const sorted = <T,>(list: T[], key: (item: T) => number, dir: 1 | -1) =>
-      [...list].sort((a, b) => (key(a) - key(b)) * dir);
-    return {
-      dueSoon: sorted(
-        orders.filter((o) => isDueSoon(o, 7, now)),
-        (o) => new Date(o.due_at as string).getTime(),
-        1,
-      ).slice(0, 5),
-      recent: sorted(orders, (o) => new Date(o.updated_at).getTime(), -1).slice(0, 6),
-      latest: sorted(orders, (o) => new Date(o.created_at).getTime(), -1).slice(0, 5),
-    };
+  const recent = useMemo(
+    () => [...orders].sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, 6),
+    [orders],
+  );
+
+  /** Week-over-week change in work orders created (the only trend the order list can prove). */
+  const totalTrend = useMemo(() => {
+    const week = 7 * 24 * 3600 * 1000;
+    const created = (o: { created_at: string }) => new Date(o.created_at).getTime();
+    const cur = orders.filter((o) => now - created(o) < week).length;
+    const prev = orders.filter((o) => now - created(o) >= week && now - created(o) < 2 * week).length;
+    return prev === 0 ? null : Math.round(((cur - prev) / prev) * 100);
   }, [orders, now]);
 
+  const stats: { label: string; value: number | string; icon: IconName; tone: string; trend?: number | null }[] = [
+    { label: "Total work orders", value: numbers.total, icon: "clipboard", tone: "", trend: totalTrend },
+    { label: "Active", value: numbers.active, icon: "play", tone: "" },
+    { label: "Overdue", value: numbers.overdue, icon: "alert", tone: "is-red" },
+    { label: "Tasks awaiting review", value: numbers.tasksAwaiting, icon: "eye", tone: "is-purple" },
+    { label: "Need a person", value: numbers.needsPerson ?? "—", icon: "user", tone: "is-purple" },
+    { label: "Evidence issues", value: numbers.evidenceIssues ?? "—", icon: "flag", tone: "is-amber" },
+  ];
+
   return (
-    <>
-      <PageHeader
-        title={user ? `Good to see you, ${user.name.split(" ")[0]}` : "Overview"}
-        subtitle="Review the exceptions. Everything the checks could settle has already been decided."
-        actions={
-          <ButtonLink to="/manager/work-orders/new" variant="primary">
-            <Icon name="plus" size={16} />
-            New work order
-          </ButtonLink>
-        }
-      />
+    <div className="manager-overview">
+      <header className="manager-overview__intro">
+        <div className="manager-overview__intro-copy">
+          <h1>Good to see you, {user ? user.name.split(" ")[0] : "there"} 👋</h1>
+          <p>Review work, track progress, and manage your team efficiently.</p>
+        </div>
+        <ButtonLink
+          to="/manager/work-orders/new"
+          variant="primary"
+          className="manager-overview__primary-action"
+        >
+          <Icon name="plus" size={16} />
+          New work order
+        </ButtonLink>
+      </header>
 
       {error ? <ErrorState message={error} onRetry={() => void reload()} /> : null}
-      <ScoreOverview />
 
       {loading && !data ? (
-        <div className="stats" aria-busy="true" aria-label="Loading overview">
-          {[0, 1, 2, 3, 4].map((n) => (
+        <div className="manager-overview__stats" aria-busy="true" aria-label="Loading overview">
+          {[0, 1, 2, 3, 4, 5].map((n) => (
             <Skeleton key={n} className="skeleton-stat" />
           ))}
         </div>
       ) : data ? (
         <>
-          <dl className="stats">
-            <Stat label="Total work orders" value={numbers.total} icon="clipboard" />
-            <Stat label="Active" value={numbers.active} icon="clock" hint="Open, in progress or in review" />
-            <Stat
-              label="Overdue"
-              value={numbers.overdue}
-              icon="alert"
-              tone={numbers.overdue ? "fail" : "default"}
-            />
-            <Stat
-              label="Tasks awaiting review"
-              value={numbers.tasksAwaiting}
-              icon="eye"
-              tone={numbers.tasksAwaiting ? "review" : "default"}
-              hint="Submitted, no decision yet"
-            />
-            {numbers.needsPerson !== null ? (
-              <Stat
-                label="Need a person"
-                value={numbers.needsPerson}
-                icon="user"
-                tone={numbers.needsPerson ? "review" : "default"}
-                hint="The AI could not decide"
-              />
-            ) : null}
-            {numbers.evidenceIssues !== null ? (
-              <Stat
-                label="Evidence issues"
-                value={numbers.evidenceIssues}
-                icon="flag"
-                tone={numbers.evidenceIssues ? "warn" : "default"}
-                hint="Flagged or failed files"
-              />
-            ) : null}
-            <Stat
-              label="Need a worker"
-              value={numbers.unassigned}
-              icon="user"
-              tone={numbers.unassigned ? "warn" : "default"}
-            />
-          </dl>
+          <section className="manager-overview__stats" aria-label="Work overview">
+            {stats.map((s) => (
+              <article className="manager-overview__stat" key={s.label}>
+                <div className="manager-overview__stat-top">
+                  <span className={`manager-overview__stat-icon ${s.tone}`}>
+                    <Icon name={s.icon} size={20} />
+                  </span>
+                </div>
+                <span className="manager-overview__stat-label">{s.label}</span>
+                <strong className="manager-overview__stat-value">
+                  {s.value}
+                  {typeof s.trend === "number" ? (
+                    <span className={`manager-overview__stat-trend ${s.trend < 0 ? "is-negative" : ""}`}>
+                      {s.trend < 0 ? "↓" : "↑"} {s.trend > 0 ? "+" : ""}
+                      {s.trend}%
+                    </span>
+                  ) : null}
+                </strong>
+              </article>
+            ))}
+          </section>
 
           {data.truncated ? (
             <p className="muted small">Showing the most recent {orders.length} work orders.</p>
@@ -146,106 +135,107 @@ export function OverviewPage() {
               </EmptyState>
             </Card>
           ) : (
-            <div className="dash-grid">
-              <div className="dash-main">
-                <Card aria-labelledby="attn-title">
-                  <CardHeader
-                    id="attn-title"
-                    title="Needs your attention"
-                    hint="Overdue, waiting for a decision, flagged evidence, or missing a worker."
-                  />
-                  {attention.length === 0 ? (
-                    <EmptyState icon="checkCircle" title="Nothing is stuck">
-                      New exceptions will show up here.
-                    </EmptyState>
-                  ) : (
-                    <ul className="attn-list">
-                      {attention.slice(0, 8).map((entry) => (
-                        <li key={entry.key}>
-                          <Link to={entry.to} className="attn-item">
-                            <span className={`attn-bar attn-${entry.tone}`} aria-hidden="true" />
-                            <span className="attn-text">
-                              <span className="attn-title">{entry.title}</span>
-                              <span className="attn-why">{entry.why}</span>
-                            </span>
-                            <Icon name="chevronRight" size={16} />
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {attention.length > 8 ? (
-                    <p className="muted small">And {attention.length - 8} more.</p>
-                  ) : null}
-                </Card>
-
-                <Card aria-labelledby="latest-title">
-                  <CardHeader
-                    id="latest-title"
-                    title="Latest work orders"
-                    actions={
-                      <ButtonLink to="/manager/work-orders" variant="ghost" size="s">
-                        View all
-                      </ButtonLink>
-                    }
-                  />
-                  <WorkOrderTable orders={view.latest} assigneeName={nameOf} />
-                </Card>
+            <>
+              <div className="manager-overview__grid">
+                <ScoreOverview />
+                <section className="manager-overview__panel" aria-labelledby="dist-title">
+                  <PanelHeading id="dist-title" icon="layers" title="Work order status" />
+                  <StatusDistribution orders={orders} />
+                </section>
               </div>
 
-              <div className="dash-side">
-                <Card aria-labelledby="dist-title">
-                  <CardHeader id="dist-title" title="Where work orders stand" />
-                  <StatusDistribution orders={orders} />
-                </Card>
-
-                <Card aria-labelledby="soon-title">
-                  <CardHeader id="soon-title" title="Due in the next 7 days" />
-                  {view.dueSoon.length === 0 ? (
-                    <p className="muted">Nothing is due this week.</p>
+              <div className="manager-overview__bottom-grid">
+                <section className="manager-overview__panel" aria-labelledby="attn-title">
+                  <PanelHeading
+                    id="attn-title"
+                    icon="target"
+                    title="Needs your attention"
+                    subtitle="Overdue, waiting for a decision, or missing a worker."
+                    linkTo="/manager/work-orders"
+                  />
+                  {attention.length === 0 ? (
+                    <p className="manager-overview__empty">Nothing is stuck. New exceptions will show up here.</p>
                   ) : (
-                    <ul className="mini-list">
-                      {view.dueSoon.map((o) => (
-                        <li key={o.id}>
-                          <Link to={`/manager/work-orders/${o.id}`}>
-                            <span className="mini-title">{o.title}</span>
-                            <span className="mini-meta num">{formatDate(o.due_at)}</span>
-                          </Link>
-                        </li>
-                      ))}
+                    <ul className="manager-overview__attention-list">
+                      {attention.slice(0, 4).map((entry) => {
+                        const overdue = entry.why.startsWith("Overdue");
+                        return (
+                          <li key={entry.key}>
+                            <Link to={entry.to} className="manager-overview__attention-item">
+                              <span
+                                className={`manager-overview__attention-bar ${
+                                  overdue || entry.tone === "fail"
+                                    ? "is-overdue"
+                                    : entry.tone === "warn"
+                                      ? "is-evidence"
+                                      : ""
+                                }`}
+                                aria-hidden="true"
+                              />
+                              <span className="manager-overview__attention-copy">
+                                <strong>{entry.title}</strong>
+                                <small>{entry.why}</small>
+                              </span>
+                              <span
+                                className={`manager-overview__attention-tag ${overdue ? "is-overdue" : ""}`}
+                              >
+                                {overdue ? "Overdue" : entry.tone === "warn" ? "Check" : "Review"}
+                              </span>
+                              <Icon name="chevronRight" size={16} />
+                            </Link>
+                          </li>
+                        );
+                      })}
                     </ul>
                   )}
-                </Card>
+                  {attention.length > 4 ? (
+                    <p className="muted small">And {attention.length - 4} more.</p>
+                  ) : null}
+                </section>
 
-                <Card aria-labelledby="recent-title">
-                  <CardHeader id="recent-title" title="Recent activity" />
-                  <ul className="mini-list">
-                    {view.recent.map((o) => {
+                <section className="manager-overview__panel" aria-labelledby="recent-title">
+                  <PanelHeading
+                    id="recent-title"
+                    icon="clock"
+                    title="Recent activity"
+                    subtitle="Latest updates from your workspace."
+                    linkTo="/manager/work-orders"
+                  />
+                  <ul className="manager-overview__activity-list">
+                    {recent.map((o) => {
                       const created =
                         Math.abs(new Date(o.updated_at).getTime() - new Date(o.created_at).getTime()) < 2000;
                       const meta = WORK_ORDER_STATUS[o.status];
+                      const muted = o.status === "cancelled" || o.status === "draft";
                       return (
                         <li key={o.id}>
-                          <Link to={`/manager/work-orders/${o.id}`}>
-                            <span className="mini-title">{o.title}</span>
-                            <span className="mini-meta">
-                              <StatusBadge
-                                label={created ? "Created" : meta.label}
-                                tone={created ? "info" : meta.tone}
-                              />
-                              <span>{relativeTime(o.updated_at)}</span>
+                          <Link
+                            to={`/manager/work-orders/${o.id}`}
+                            className="manager-overview__activity-item"
+                          >
+                            <span className="manager-overview__activity-icon" aria-hidden="true">
+                              <Icon name="clipboard" size={18} />
+                            </span>
+                            <span className="manager-overview__activity-copy">
+                              <strong>{o.title}</strong>
+                            </span>
+                            <span className={`manager-overview__activity-status ${muted ? "is-muted" : ""}`}>
+                              {created ? "Created" : meta.label}
+                            </span>
+                            <span className="manager-overview__activity-time">
+                              {relativeTime(o.updated_at, now)}
                             </span>
                           </Link>
                         </li>
                       );
                     })}
                   </ul>
-                </Card>
+                </section>
               </div>
-            </div>
+            </>
           )}
         </>
       ) : null}
-    </>
+    </div>
   );
 }

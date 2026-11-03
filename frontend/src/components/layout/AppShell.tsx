@@ -12,8 +12,20 @@ import { Icon, type IconName } from "../ui/Icon";
 import { ActionCenter } from "./ActionCenter";
 import { Logo } from "./Logo";
 import { RoleBadge } from "../ui/RoleBadge";
+import "../../styles/manager-premium.css";
 
 const ROLE_LABEL: Record<Role, string> = { manager: "Manager", worker: "Worker" };
+const WORKER_THEME_EVENT = "proofline:worker-theme-change";
+
+type Theme = "light" | "dark";
+
+function readManagerTheme(): Theme {
+  try {
+    return window.localStorage.getItem("proofline-manager-theme") === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
 
 interface NavItem {
   to: string;
@@ -28,6 +40,9 @@ const NAV: Record<Role, NavItem[]> = {
     { to: "/manager/work-orders", label: "Work orders", icon: "clipboard" },
     { to: "/manager/locations", label: "Locations", icon: "mapPin" },
     { to: "/manager/team", label: "Team and roles", icon: "users" },
+    { to: "/manager/reports", label: "Reports", icon: "chart" },
+    { to: "/manager/ai-insights", label: "AI Insights", icon: "sparkle" },
+    { to: "/manager/settings", label: "Settings", icon: "settings" },
   ],
   worker: [
     { to: "/worker", label: "Overview", icon: "dashboard", end: true },
@@ -84,6 +99,7 @@ export function AppShell({ role }: { role: Role }) {
   // without an effect.
   const routeKey = `${location.key}:${location.pathname}${location.search}`;
   const [openOn, setOpenOn] = useState<string | null>(null);
+  const [managerTheme, setManagerTheme] = useState<Theme>(readManagerTheme);
   const [workerTheme, setWorkerTheme] = useState<"light" | "dark">(() => {
     try {
       return window.localStorage.getItem("proofline-worker-theme") === "dark" ? "dark" : "light";
@@ -91,6 +107,43 @@ export function AppShell({ role }: { role: Role }) {
       return "light";
     }
   });
+  useEffect(() => {
+    const handleWorkerThemeChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ theme?: "light" | "dark" }>;
+      const nextTheme = customEvent.detail?.theme;
+
+      if (nextTheme === "light" || nextTheme === "dark") {
+        setWorkerTheme(nextTheme);
+      }
+    };
+
+    window.addEventListener(WORKER_THEME_EVENT, handleWorkerThemeChange);
+    return () => window.removeEventListener(WORKER_THEME_EVENT, handleWorkerThemeChange);
+  }, []);
+  useEffect(() => {
+    const handleManagerThemeChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ theme?: "light" | "dark" }>;
+      const nextTheme = customEvent.detail?.theme;
+
+      if (nextTheme === "light" || nextTheme === "dark") {
+        setManagerTheme(nextTheme);
+      }
+    };
+
+    window.addEventListener("proofline:manager-theme-change", handleManagerThemeChange);
+    return () => {
+      window.removeEventListener("proofline:manager-theme-change", handleManagerThemeChange);
+    };
+  }, []);
+  useEffect(() => {
+    if (role !== "manager") return;
+    try {
+      window.localStorage.setItem("proofline-manager-theme", managerTheme);
+    } catch {
+      // Storage may be disabled; the in-memory theme still works.
+    }
+  }, [role, managerTheme]);
+
   useEffect(() => {
     if (role !== "worker") return;
     document.documentElement.dataset.workerTheme = workerTheme;
@@ -107,6 +160,21 @@ export function AppShell({ role }: { role: Role }) {
   );
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRoot = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (role !== "manager") return;
+
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [role]);
 
   useEffect(() => {
     if (!notificationsOpen) return;
@@ -135,7 +203,7 @@ export function AppShell({ role }: { role: Role }) {
   }));
 
   return (
-    <div className="app" data-role={role} data-theme={role === "worker" ? workerTheme : "light"}>
+    <div className="app" data-role={role} data-theme={role === "manager" ? managerTheme : role === "worker" ? workerTheme : "light"}>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -170,27 +238,30 @@ export function AppShell({ role }: { role: Role }) {
         </nav>
 
         <div className="sidebar-foot">
-          <ConnectionPill />
+          {role !== "manager" ? <ConnectionPill /> : null}
+
           <div className="side-user">
             <Avatar name={user?.name ?? "?"} size={36} />
+
             <div className="side-user-text">
               <p className="side-user-name">{user?.name}</p>
               <p className="side-user-role">
                 <RoleBadge role={role} />
               </p>
             </div>
-            {role !== "worker" ? (
+
+            {role !== "manager" ? (
               <button
-                type="button"
-                className="icon-btn icon-btn-dark"
-                aria-label="Sign out"
-                title="Sign out"
-                onClick={() => {
-                  signOut();
-                  navigate("/");
-                }}
-              >
-                <Icon name="logout" size={18} />
+              type="button"
+              className="icon-btn icon-btn-dark"
+              aria-label="Sign out"
+              title="Sign out"
+              onClick={() => {
+                signOut();
+                navigate("/");
+              }}
+            >
+              <Icon name="logout" size={18} />
               </button>
             ) : null}
           </div>
@@ -210,6 +281,44 @@ export function AppShell({ role }: { role: Role }) {
           </button>
           <span className="topbar-role">{ROLE_LABEL[role]} workspace</span>
           <div className="topbar-right">
+            {role === "manager" ? (
+              <form
+                className="manager-search"
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const q = searchRef.current?.value.trim() ?? "";
+                  navigate(
+                    q
+                      ? `/manager/work-orders?q=${encodeURIComponent(q)}`
+                      : "/manager/work-orders",
+                  );
+                }}
+              >
+                <Icon name="search" size={16} />
+                <input
+                  ref={searchRef}
+                  type="search"
+                  placeholder="Search work orders, people, locations…"
+                  aria-label="Search work orders, people, locations"
+                />
+                <kbd aria-hidden="true">⌘K</kbd>
+              </form>
+            ) : null}
+            {role === "manager" ? (
+              <button
+                type="button"
+                className="manager-theme-toggle"
+                onClick={() =>
+                  setManagerTheme((theme) => (theme === "light" ? "dark" : "light"))
+                }
+                aria-label={`Switch to ${managerTheme === "light" ? "dark" : "light"} mode`}
+                title={`Switch to ${managerTheme === "light" ? "dark" : "light"} mode`}
+              >
+                <span aria-hidden="true">{managerTheme === "light" ? "☾" : "☀"}</span>
+                {managerTheme === "light" ? "Dark" : "Light"}
+              </button>
+            ) : null}
             {role === "worker" ? (
               <button
                 type="button"
@@ -273,6 +382,21 @@ export function AppShell({ role }: { role: Role }) {
                 aria-label="Sign out"
                 title="Sign out"
               >
+                <span>Sign out</span>
+              </button>
+            ) : null}
+            {role === "manager" ? (
+              <button
+                type="button"
+                className="manager-signout"
+                onClick={() => {
+                  signOut();
+                  navigate("/");
+                }}
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <Icon name="logout" size={15} />
                 <span>Sign out</span>
               </button>
             ) : null}

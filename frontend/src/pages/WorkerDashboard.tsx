@@ -183,7 +183,7 @@ export function WorkerDashboard() {
 
       {creating && user ? (
         <NewSelfWorkDialog
-          userId={user.id}
+          userId={user.id ?? ""}
           onClose={() => setCreating(false)}
           onCreated={(taskId) => {
             setCreating(false);
@@ -196,7 +196,7 @@ export function WorkerDashboard() {
 
       {editing && user ? (
         <NewSelfWorkDialog
-          userId={user.id}
+          userId={user.id ?? ""}
           edit={editing}
           onClose={() => setEditing(null)}
           onCreated={() => undefined}

@@ -1,4 +1,4 @@
-"""v2 step 2: AI score runs (progress and what the AI saw)."""
+"""AI score runs (progress and what the AI saw)."""
 
 from alembic import op
 import sqlalchemy as sa

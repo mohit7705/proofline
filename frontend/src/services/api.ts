@@ -231,6 +231,10 @@ export async function updateTask(taskId: string, changes: TaskUpdateInput): Prom
   return backendRequest<Task>(`/tasks/${enc(taskId)}`, jsonBody("PATCH", changes));
 }
 
+export async function deleteEvidence(evidenceId: string): Promise<void> {
+  await backendRequest<void>(`/evidence/${enc(evidenceId)}`, { method: "DELETE" });
+}
+
 export async function deleteTask(taskId: string): Promise<void> {
   await backendRequest<void>(`/tasks/${enc(taskId)}`, { method: "DELETE" });
 }
@@ -455,6 +459,11 @@ export function listEvidence(taskId: string): Promise<Evidence[]> {
 /** 422 when the evidence is not enough, 409 when the task is not in a state that can be submitted. */
 export function submitTaskForReview(taskId: string): Promise<Task> {
   return backendRequest<Task>(`/tasks/${enc(taskId)}/submit`, { method: "POST" });
+}
+
+/** Close work you created yourself after a fresh Strong AI score. */
+export function completeOwnWork(taskId: string): Promise<Task> {
+  return backendRequest<Task>(`/tasks/${enc(taskId)}/complete`, { method: "POST" });
 }
 
 /** Always answers. It is recalculated on the server when the evidence or an analysis changed. */

@@ -1,4 +1,4 @@
-"""v2 step 1: evidence phase, self-created work, challenge code, score storage."""
+"""Evidence phase, self-created work, challenge code, score storage."""
 
 from alembic import op
 import sqlalchemy as sa

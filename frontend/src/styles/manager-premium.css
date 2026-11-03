@@ -1,0 +1,2063 @@
+/*
+ * Manager-only visual layer.
+ * Every selector is scoped under .app[data-role="manager"].
+ * This intentionally does not style Worker or Inspector pages.
+ */
+
+.app[data-role="manager"] {
+  --manager-bg: #f4f6fc;
+  --manager-surface: #ffffff;
+  --manager-surface-soft: #f7f8ff;
+  --manager-border: #dfe4f2;
+  --manager-text: #17213b;
+  --manager-muted: #687796;
+  --manager-accent: #3f46f5;
+  --manager-accent-soft: #eceeff;
+  --manager-shadow: 0 8px 24px rgba(31, 47, 91, 0.055);
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--manager-bg);
+  color: var(--manager-text);
+}
+
+/* Full-screen app frame: fixed-width sidebar + fluid content. */
+.app[data-role="manager"] .app-main {
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--manager-bg);
+}
+
+.app[data-role="manager"] .app-content {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: clamp(1.15rem, 2.1vw, 2rem)
+    clamp(1.15rem, 2.1vw, 2.15rem) 3rem;
+  margin: 0;
+}
+
+/* Keep the sidebar pinned to the full viewport height. */
+.app[data-role="manager"] .sidebar {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+}
+
+.app[data-role="manager"] .sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app[data-role="manager"] .sidebar-foot {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+}
+
+/* Keep the connection status visible and readable. */
+.app[data-role="manager"] .conn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 0.65rem;
+  padding: 0.38rem 0.62rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #b9c5e5;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .conn-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 0.45rem;
+  border-radius: 50%;
+}
+
+/* Match the compact account card in the reference image. */
+.app[data-role="manager"] .side-user {
+  min-height: 3.55rem;
+  padding: 0.55rem 0.65rem;
+  gap: 0.65rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(196, 207, 239, 0.16);
+}
+
+.app[data-role="manager"] .side-user-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .side-user-name {
+  margin: 0 0 0.12rem;
+  color: #f5f7ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .side-user-role {
+  margin: 0;
+  line-height: 1;
+}
+
+/* Topbar controls align to the far right. */
+.app[data-role="manager"] .topbar {
+  min-height: 3.55rem;
+  width: 100%;
+  padding: 0.45rem clamp(1rem, 2vw, 2rem);
+  background: var(--manager-surface);
+  border-bottom: 1px solid var(--manager-border);
+  box-shadow: 0 1px 0 rgba(31, 47, 91, 0.015);
+}
+
+.app[data-role="manager"] .topbar-role {
+  color: var(--manager-text);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.app[data-role="manager"] .topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.app[data-role="manager"] .manager-theme-toggle,
+.app[data-role="manager"] .manager-signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.app[data-role="manager"] .manager-theme-toggle {
+  color: var(--manager-text);
+  background: var(--manager-surface);
+  border: 1px solid var(--manager-border);
+  box-shadow: 0 2px 7px rgba(31, 47, 91, 0.06);
+}
+
+.app[data-role="manager"] .manager-theme-toggle span {
+  font-size: 1rem;
+}
+
+.app[data-role="manager"] .manager-signout {
+  color: #c4313b;
+  background: #fff7f7;
+  border: 1px solid #f3b8bd;
+  border-radius: 0.7rem;
+}
+
+.app[data-role="manager"] .manager-theme-toggle:hover,
+.app[data-role="manager"] .manager-signout:hover {
+  transform: translateY(-1px);
+}
+
+.app[data-role="manager"] .manager-theme-toggle:focus-visible,
+.app[data-role="manager"] .manager-signout:focus-visible {
+  outline: 3px solid rgba(63, 70, 245, 0.25);
+  outline-offset: 2px;
+}
+
+/*
+ * Existing manager page components keep their original markup and behavior.
+ * These rules remove the narrow content column and let common page wrappers,
+ * tables and cards use the available horizontal space.
+ */
+.app[data-role="manager"] .app-content > * {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .app-content section,
+.app[data-role="manager"] .app-content article {
+  min-width: 0;
+}
+
+.app[data-role="manager"] .app-content table {
+  width: 100%;
+}
+
+.app[data-role="manager"] .app-content .panel,
+.app[data-role="manager"] .app-content .card,
+.app[data-role="manager"] .app-content .surface {
+  min-width: 0;
+}
+
+/* Ensure page-level grids can expand rather than retaining a narrow fixed width. */
+.app[data-role="manager"] .app-content [class*="grid"],
+.app[data-role="manager"] .app-content [class*="layout"] {
+  min-width: 0;
+}
+
+/* Manager-only dark theme. */
+.app[data-role="manager"][data-theme="dark"] {
+  --manager-bg: #10172a;
+  --manager-surface: #17213a;
+  --manager-surface-soft: #1d2945;
+  --manager-border: #2d3a5a;
+  --manager-text: #edf2ff;
+  --manager-muted: #a8b5d2;
+  --manager-accent: #8188ff;
+  --manager-accent-soft: #29335e;
+  --manager-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+
+  color-scheme: dark;
+}
+
+.app[data-role="manager"][data-theme="dark"] .app-main,
+.app[data-role="manager"][data-theme="dark"] .app-content {
+  background: var(--manager-bg);
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .topbar {
+  background: var(--manager-surface);
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .topbar-role,
+.app[data-role="manager"][data-theme="dark"] .app-content h1,
+.app[data-role="manager"][data-theme="dark"] .app-content h2,
+.app[data-role="manager"][data-theme="dark"] .app-content h3,
+.app[data-role="manager"][data-theme="dark"] .app-content strong,
+.app[data-role="manager"][data-theme="dark"] .app-content label {
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .app-content p,
+.app[data-role="manager"][data-theme="dark"] .app-content small,
+.app[data-role="manager"][data-theme="dark"] .app-content th {
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"][data-theme="dark"] .app-content > div,
+.app[data-role="manager"][data-theme="dark"] .app-content section,
+.app[data-role="manager"][data-theme="dark"] .app-content article,
+.app[data-role="manager"][data-theme="dark"] .app-content .panel,
+.app[data-role="manager"][data-theme="dark"] .app-content .card,
+.app[data-role="manager"][data-theme="dark"] .app-content .surface,
+.app[data-role="manager"][data-theme="dark"] .app-content form {
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .app-content input,
+.app[data-role="manager"][data-theme="dark"] .app-content select,
+.app[data-role="manager"][data-theme="dark"] .app-content textarea {
+  color: var(--manager-text);
+  background: #111b31;
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-theme-toggle {
+  color: var(--manager-text);
+  background: #202c49;
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-signout {
+  color: #ffb9bd;
+  background: #3a202d;
+  border-color: #71404c;
+}
+
+/* Responsive navigation remains the existing drawer on smaller screens. */
+@media (max-width: 60rem) {
+  .app[data-role="manager"] .sidebar {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .app[data-role="manager"] .app-content {
+    padding: 1.1rem 1rem 2.25rem;
+  }
+
+  .app[data-role="manager"] .topbar {
+    min-height: 3.35rem;
+    padding-inline: 0.85rem;
+  }
+
+  .app[data-role="manager"] .topbar-menu {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 38rem) {
+  .app[data-role="manager"] .topbar-right {
+    gap: 0.4rem;
+  }
+
+  .app[data-role="manager"] .manager-theme-toggle,
+  .app[data-role="manager"] .manager-signout {
+    min-height: 2rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .app[data-role="manager"] .manager-signout span {
+    display: none;
+  }
+
+  .app[data-role="manager"] .topbar-role {
+    font-size: 0.76rem;
+  }
+}
+
+/*
+ * Manager sidebar navigation spacing correction:
+ * keep the four links compact instead of stretching the active row.
+ */
+.app[data-role="manager"] .sidebar-nav {
+  display: grid;
+  flex: 0 0 auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+  align-content: start;
+  align-items: start;
+  grid-auto-rows: max-content;
+  gap: 0.25rem;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+}
+
+.app[data-role="manager"] .sidebar-nav .side-link {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.65rem;
+  height: auto;
+  box-sizing: border-box;
+  padding: 0.65rem 0.8rem;
+  line-height: 1.25;
+  flex: none;
+}
+
+.app[data-role="manager"] .sidebar-nav .side-link.is-active {
+  min-height: 2.65rem;
+  height: auto;
+  align-self: start;
+}
+
+.app[data-role="manager"] .sidebar-foot {
+  flex: 0 0 auto;
+  margin-top: auto;
+  display: grid;
+  align-content: end;
+  gap: 0.65rem;
+}
+
+.app[data-role="manager"] .sidebar-foot .conn {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 1.8rem;
+  margin: 0;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .sidebar-foot .side-user {
+  flex: 0 0 auto;
+  min-height: 3.55rem;
+  height: auto;
+}
+
+/* ---- Manager top bar search + overview polish (Manager only) ---- */
+.app[data-role="manager"] .manager-search {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: clamp(220px, 28vw, 390px);
+  height: 2.5rem;
+  padding: 0 0.7rem;
+  border: 1px solid #dfe4f5;
+  border-radius: 0.8rem;
+  background: #fff;
+  color: #64739a;
+  box-shadow: 0 2px 8px rgba(34, 47, 95, 0.05);
+}
+
+.app[data-role="manager"] .manager-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #111a35;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.app[data-role="manager"] .manager-search:focus-within {
+  border-color: #8b6cf0;
+  box-shadow: 0 0 0 3px rgba(99, 53, 232, 0.14);
+}
+
+.app[data-role="manager"] .manager-search kbd {
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.4rem;
+  background: #eef0fb;
+  color: #5d6a90;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-search {
+  border-color: rgba(196, 207, 239, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-search input {
+  color: #f5f7ff;
+}
+
+@media (max-width: 900px) {
+  .app[data-role="manager"] .manager-search {
+    display: none;
+  }
+}
+/* =========================================================
+   Manager Work Orders — reference-inspired page treatment
+   Strictly scoped: Worker pages are not affected.
+   ========================================================= */
+
+.app[data-role="manager"] .app-content {
+  background:
+    radial-gradient(
+      ellipse at 58% 0%,
+      rgba(121, 91, 255, 0.075),
+      transparent 42rem
+    ),
+    var(--manager-bg);
+}
+
+.app[data-role="manager"] .manager-work-orders {
+  width: 100%;
+  min-width: 0;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"] .manager-work-orders__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin: 0 0 1.15rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__heading-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-work-orders__heading-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 3.1rem;
+  width: 3.1rem;
+  height: 3.1rem;
+  border: 1px solid rgba(117, 76, 255, 0.12);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #f1eaff, #e8e9ff);
+  color: #6533e9;
+}
+
+.app[data-role="manager"] .manager-work-orders__heading h1 {
+  margin: 0;
+  color: var(--manager-text);
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+
+.app[data-role="manager"] .manager-work-orders__heading p {
+  margin: 0.32rem 0 0;
+  color: var(--manager-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.app[data-role="manager"] .manager-work-orders__new-button {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  padding-inline: 1.15rem;
+  border-radius: 0.85rem;
+  box-shadow: 0 7px 16px rgba(83, 48, 218, 0.2);
+}
+
+/* KPI strip */
+.app[data-role="manager"] .manager-work-orders__stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0 0 1.1rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  column-gap: 0.7rem;
+  min-width: 0;
+  min-height: 7rem;
+  padding: 0.85rem 0.95rem;
+  overflow: hidden;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 5px 16px rgba(44, 52, 112, 0.045);
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon {
+  display: grid;
+  place-items: center;
+  grid-row: 1 / span 2;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.72rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon.is-purple {
+  color: #6736ed;
+  background: #f0eaff;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon.is-blue {
+  color: #087bdc;
+  background: #e4f3ff;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon.is-red {
+  color: #e24b3f;
+  background: #fff0ed;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon.is-green {
+  color: #0b9b55;
+  background: #e5f8ed;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-icon.is-amber {
+  color: #d97706;
+  background: #fff3df;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-label {
+  min-width: 0;
+  color: var(--manager-muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-value {
+  grid-column: 2;
+  color: var(--manager-text);
+  font-size: clamp(1.55rem, 2vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-detail {
+  grid-column: 1 / -1;
+  margin-top: 0.48rem;
+  color: var(--manager-muted);
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.app[data-role="manager"] .manager-work-orders__stat-skeleton {
+  min-height: 7rem;
+  border: 1px solid var(--manager-border);
+  border-radius: 1rem;
+  background: linear-gradient(
+    90deg,
+    var(--manager-surface-soft),
+    var(--manager-surface),
+    var(--manager-surface-soft)
+  );
+}
+
+/* Main table surface */
+.app[data-role="manager"] .manager-work-orders > .card {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 7px 22px rgba(44, 52, 112, 0.055);
+}
+
+.app[data-role="manager"] .manager-work-orders__workspace {
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-work-orders__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--manager-border);
+}
+
+.app[data-role="manager"] .manager-work-orders__tabs {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.app[data-role="manager"] .manager-work-orders__tabs .tabs {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__filters {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+}
+
+.app[data-role="manager"] .manager-work-orders__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: clamp(12rem, 19vw, 17rem);
+  min-height: 2.45rem;
+  padding: 0 0.7rem;
+  border: 1px solid #d9def2;
+  border-radius: 0.72rem;
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"] .manager-work-orders__search:focus-within {
+  border-color: #8c6bf0;
+  box-shadow: 0 0 0 3px rgba(99, 53, 232, 0.11);
+}
+
+.app[data-role="manager"] .manager-work-orders__search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--manager-text);
+  font: inherit;
+  font-size: 0.77rem;
+  box-shadow: none;
+}
+
+.app[data-role="manager"] .manager-work-orders__search input::placeholder {
+  color: #8792ad;
+}
+
+.app[data-role="manager"] .manager-work-orders__filters select {
+  min-width: 9.5rem;
+  min-height: 2.45rem;
+  border: 1px solid #d9def2;
+  border-radius: 0.72rem;
+  background-color: var(--manager-surface);
+  color: var(--manager-text);
+  font-size: 0.77rem;
+}
+
+/* Dense, aligned table */
+.app[data-role="manager"] .manager-work-orders__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.app[data-role="manager"] .manager-work-orders__table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app[data-role="manager"] .manager-work-orders__table thead th {
+  height: 2.65rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--manager-border);
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.015em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__table thead th:first-child,
+.app[data-role="manager"] .manager-work-orders__table tbody th:first-child {
+  padding-left: 1.15rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__table tbody tr {
+  transition: background 140ms ease;
+}
+
+.app[data-role="manager"] .manager-work-orders__table tbody tr:hover {
+  background: #f8f7ff;
+}
+
+.app[data-role="manager"] .manager-work-orders__table tbody th,
+.app[data-role="manager"] .manager-work-orders__table tbody td {
+  height: 3.45rem;
+  padding: 0.48rem 0.75rem;
+  border-bottom: 1px solid #e9ebf5;
+  color: var(--manager-text);
+  font-size: 0.77rem;
+  font-weight: 500;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.app[data-role="manager"] .manager-work-orders__table tbody tr:last-child th,
+.app[data-role="manager"] .manager-work-orders__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app[data-role="manager"] .manager-work-orders__order-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 12rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__order-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: #f0eaff;
+  color: #6538e8;
+}
+
+.app[data-role="manager"] .manager-work-orders__order-copy {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-work-orders__order-title {
+  overflow: hidden;
+  color: var(--manager-text);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__order-title:hover {
+  color: var(--manager-accent);
+}
+
+.app[data-role="manager"] .manager-work-orders__order-description {
+  display: block;
+  max-width: 20rem;
+  overflow: hidden;
+  color: var(--manager-muted);
+  font-size: 0.68rem;
+  font-weight: 450;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__assignee {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__assignee-avatar {
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 1.65rem;
+  border-radius: 50%;
+  background: #8588c8;
+  color: #fff;
+  font-size: 0.59rem;
+  font-weight: 750;
+}
+
+.app[data-role="manager"] .manager-work-orders__assignee.is-unassigned {
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"] .manager-work-orders__assignee.is-unassigned
+  .manager-work-orders__assignee-avatar {
+  background: #eef0f7;
+  color: #77819a;
+}
+
+.app[data-role="manager"] .manager-work-orders__due,
+.app[data-role="manager"] .manager-work-orders__updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--manager-muted);
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__due svg {
+  color: #65729a;
+}
+
+.app[data-role="manager"] .manager-work-orders__updated {
+  font-size: 0.72rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__overdue {
+  display: inline-flex;
+  margin-left: 0.4rem;
+  padding: 0.2rem 0.42rem;
+  border-radius: 999px;
+  background: #ffe7e8;
+  color: #c52f3b;
+  font-size: 0.62rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-work-orders__actions-heading,
+.app[data-role="manager"] .manager-work-orders__actions-cell {
+  width: 4.5rem;
+  text-align: center !important;
+}
+
+.app[data-role="manager"] .manager-work-orders__view-action {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #e0e4f5;
+  border-radius: 0.65rem;
+  background: #f8f8ff;
+  color: var(--manager-text);
+  text-decoration: none;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.app[data-role="manager"] .manager-work-orders__view-action:hover {
+  border-color: #c8b8ff;
+  background: #f0eaff;
+  color: #6234e8;
+}
+
+.app[data-role="manager"] .manager-work-orders__view-action:focus-visible {
+  outline: 3px solid rgba(99, 53, 232, 0.2);
+  outline-offset: 2px;
+}
+
+.app[data-role="manager"] .manager-work-orders__pagination {
+  padding: 0.25rem 0.95rem 0.65rem;
+}
+
+.app[data-role="manager"] .manager-work-orders__truncated {
+  margin: 0;
+  padding: 0.5rem 1rem 0.8rem;
+  color: var(--manager-muted);
+  font-size: 0.72rem;
+}
+
+/* Dark Manager theme */
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__heading-icon {
+  border-color: #493b79;
+  background: #292344;
+  color: #c4aaff;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__stat,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders > .card {
+  border-color: var(--manager-border);
+  background: var(--manager-surface);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__toolbar {
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__table thead th,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__table tbody th,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__table tbody td {
+  border-color: var(--manager-border);
+  background: transparent;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__table tbody tr:hover {
+  background: #202b47;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__order-title {
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__order-description,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__stat-label,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__stat-detail {
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__search,
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__filters select {
+  border-color: var(--manager-border);
+  background: #111b31;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-work-orders__view-action {
+  border-color: var(--manager-border);
+  background: #202c49;
+  color: var(--manager-text);
+}
+
+/* Responsive layout */
+@media (max-width: 1100px) {
+  .app[data-role="manager"] .manager-work-orders__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .app[data-role="manager"] .manager-work-orders__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__filters {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .app[data-role="manager"] .manager-work-orders__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__new-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__stat {
+    min-height: 6.5rem;
+    padding: 0.7rem;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__search,
+  .app[data-role="manager"] .manager-work-orders__filters select {
+    width: 100%;
+  }
+
+  .app[data-role="manager"] .manager-work-orders__pagination {
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app[data-role="manager"] .manager-work-orders__table tbody tr,
+  .app[data-role="manager"] .manager-work-orders__view-action {
+    transition: none;
+  }
+}
+/* =========================================================
+   Manager Locations — reference-inspired page treatment
+   Strictly scoped; no Worker styles are changed.
+   ========================================================= */
+
+.app[data-role="manager"] .app-content {
+  background:
+    radial-gradient(
+      ellipse at 58% 0%,
+      rgba(121, 91, 255, 0.075),
+      transparent 42rem
+    ),
+    var(--manager-bg);
+}
+
+.app[data-role="manager"] .manager-locations {
+  width: 100%;
+  min-width: 0;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"] .manager-locations__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin: 0 0 1.15rem;
+}
+
+.app[data-role="manager"] .manager-locations__heading-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-locations__heading-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 3.1rem;
+  width: 3.1rem;
+  height: 3.1rem;
+  border: 1px solid rgba(117, 76, 255, 0.12);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #f1eaff, #e8e9ff);
+  color: #6533e9;
+}
+
+.app[data-role="manager"] .manager-locations__heading h1 {
+  margin: 0;
+  color: var(--manager-text);
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+
+.app[data-role="manager"] .manager-locations__heading p {
+  max-width: 48rem;
+  margin: 0.32rem 0 0;
+  color: var(--manager-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.app[data-role="manager"] .manager-locations__new-button {
+  flex: 0 0 auto;
+  min-height: 2.75rem;
+  padding-inline: 1.15rem;
+  border-radius: 0.85rem;
+  box-shadow: 0 7px 16px rgba(83, 48, 218, 0.2);
+}
+
+/* Summary cards */
+.app[data-role="manager"] .manager-locations__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 0 0 1.1rem;
+}
+
+.app[data-role="manager"] .manager-locations__stat {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  column-gap: 0.75rem;
+  min-width: 0;
+  min-height: 7.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 5px 16px rgba(44, 52, 112, 0.045);
+}
+
+.app[data-role="manager"] .manager-locations__stat-icon {
+  display: grid;
+  place-items: center;
+  grid-row: 1 / span 2;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.75rem;
+}
+
+.app[data-role="manager"] .manager-locations__stat-icon.is-purple {
+  color: #6736ed;
+  background: #f0eaff;
+}
+
+.app[data-role="manager"] .manager-locations__stat-icon.is-blue {
+  color: #087bdc;
+  background: #e4f3ff;
+}
+
+.app[data-role="manager"] .manager-locations__stat-icon.is-green {
+  color: #0b9b55;
+  background: #e5f8ed;
+}
+
+.app[data-role="manager"] .manager-locations__stat-icon.is-amber {
+  color: #d97706;
+  background: #fff3df;
+}
+
+.app[data-role="manager"] .manager-locations__stat-label {
+  min-width: 0;
+  color: var(--manager-muted);
+  font-size: 0.77rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.app[data-role="manager"] .manager-locations__stat-value {
+  grid-column: 2;
+  color: var(--manager-text);
+  font-size: clamp(1.6rem, 2vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.app[data-role="manager"] .manager-locations__stat-helper {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+  color: var(--manager-muted);
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.app[data-role="manager"] .manager-locations__stat-skeleton {
+  min-height: 7.2rem;
+  border: 1px solid var(--manager-border);
+  border-radius: 1rem;
+  background: linear-gradient(
+    90deg,
+    var(--manager-surface-soft),
+    var(--manager-surface),
+    var(--manager-surface-soft)
+  );
+}
+
+/* Main locations card and toolbar */
+.app[data-role="manager"] .manager-locations__card {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 7px 22px rgba(44, 52, 112, 0.055);
+}
+
+.app[data-role="manager"] .manager-locations__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.4rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--manager-border);
+}
+
+.app[data-role="manager"] .manager-locations__toolbar-copy h2 {
+  margin: 0;
+  color: var(--manager-text);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.app[data-role="manager"] .manager-locations__toolbar-copy p {
+  margin: 0.2rem 0 0;
+  color: var(--manager-muted);
+  font-size: 0.7rem;
+}
+
+.app[data-role="manager"] .manager-locations__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: clamp(14rem, 28vw, 22rem);
+  min-height: 2.55rem;
+  padding: 0 0.75rem;
+  border: 1px solid #d9def2;
+  border-radius: 0.75rem;
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"] .manager-locations__search:focus-within {
+  border-color: #8c6bf0;
+  box-shadow: 0 0 0 3px rgba(99, 53, 232, 0.11);
+}
+
+.app[data-role="manager"] .manager-locations__search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--manager-text);
+  font: inherit;
+  font-size: 0.78rem;
+  box-shadow: none;
+}
+
+.app[data-role="manager"] .manager-locations__search input::placeholder {
+  color: #8792ad;
+}
+
+.app[data-role="manager"] .manager-locations__clear-search {
+  display: grid;
+  place-items: center;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--manager-muted);
+  cursor: pointer;
+}
+
+.app[data-role="manager"] .manager-locations__clear-search:hover {
+  background: #f0eaff;
+  color: #6533e9;
+}
+
+/* Locations table */
+.app[data-role="manager"] .manager-locations__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.app[data-role="manager"] .manager-locations__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app[data-role="manager"] .manager-locations__table thead th {
+  height: 2.8rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--manager-border);
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.015em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-locations__table thead th:first-child,
+.app[data-role="manager"] .manager-locations__table tbody th:first-child {
+  padding-left: 1.2rem;
+}
+
+.app[data-role="manager"] .manager-locations__table tbody tr {
+  transition: background 140ms ease;
+}
+
+.app[data-role="manager"] .manager-locations__table tbody tr:hover {
+  background: #f8f7ff;
+}
+
+.app[data-role="manager"] .manager-locations__table tbody th,
+.app[data-role="manager"] .manager-locations__table tbody td {
+  height: 4rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid #e9ebf5;
+  color: var(--manager-text);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.app[data-role="manager"] .manager-locations__table tbody tr:last-child th,
+.app[data-role="manager"] .manager-locations__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app[data-role="manager"] .manager-locations__site-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 10rem;
+  font-weight: 750;
+}
+
+.app[data-role="manager"] .manager-locations__site-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: #f0eaff;
+  color: #6538e8;
+}
+
+.app[data-role="manager"] .manager-locations__table .muted {
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"] .manager-locations__actions-heading,
+.app[data-role="manager"] .manager-locations__actions-cell {
+  width: 5.2rem;
+  text-align: center !important;
+}
+
+.app[data-role="manager"] .manager-locations__view-action {
+  display: inline-grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border: 1px solid #e0e4f5;
+  border-radius: 0.7rem;
+  background: #f8f8ff;
+  color: var(--manager-text);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.app[data-role="manager"] .manager-locations__view-action:hover {
+  border-color: #c8b8ff;
+  background: #f0eaff;
+  color: #6234e8;
+}
+
+.app[data-role="manager"] .manager-locations__view-action:focus-visible {
+  outline: 3px solid rgba(99, 53, 232, 0.2);
+  outline-offset: 2px;
+}
+
+/* Read-only location detail dialog content */
+.app[data-role="manager"] .manager-locations__detail {
+  display: grid;
+  gap: 0;
+}
+
+.app[data-role="manager"] .manager-locations__detail-site {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0 1rem;
+  border-bottom: 1px solid var(--manager-border);
+}
+
+.app[data-role="manager"] .manager-locations__detail-site-icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.8rem;
+  background: #f0eaff;
+  color: #6538e8;
+}
+
+.app[data-role="manager"] .manager-locations__detail-site div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.app[data-role="manager"] .manager-locations__detail-site div span,
+.app[data-role="manager"] .manager-locations__detail-row span {
+  color: var(--manager-muted);
+  font-size: 0.72rem;
+}
+
+.app[data-role="manager"] .manager-locations__detail-site strong,
+.app[data-role="manager"] .manager-locations__detail-row strong {
+  color: var(--manager-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.app[data-role="manager"] .manager-locations__detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--manager-border);
+}
+
+.app[data-role="manager"] .manager-locations__detail-row strong {
+  text-align: right;
+}
+
+/* Dark Manager theme */
+.app[data-role="manager"][data-theme="dark"] .manager-locations__heading-icon {
+  border-color: #493b79;
+  background: #292344;
+  color: #c4aaff;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__stat,
+.app[data-role="manager"][data-theme="dark"] .manager-locations__card {
+  border-color: var(--manager-border);
+  background: var(--manager-surface);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__toolbar {
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__search {
+  border-color: var(--manager-border);
+  background: #111b31;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__table thead th,
+.app[data-role="manager"][data-theme="dark"] .manager-locations__table tbody th,
+.app[data-role="manager"][data-theme="dark"] .manager-locations__table tbody td {
+  border-color: var(--manager-border);
+  background: transparent;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__table tbody tr:hover {
+  background: #202b47;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__view-action {
+  border-color: var(--manager-border);
+  background: #202c49;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-locations__detail-site,
+.app[data-role="manager"][data-theme="dark"] .manager-locations__detail-row {
+  border-color: var(--manager-border);
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .app[data-role="manager"] .manager-locations__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .app[data-role="manager"] .manager-locations__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-locations__new-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app[data-role="manager"] .manager-locations__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-locations__search {
+    width: 100%;
+  }
+
+  .app[data-role="manager"] .manager-locations__detail-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .app[data-role="manager"] .manager-locations__detail-row strong {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app[data-role="manager"] .manager-locations__table tbody tr,
+  .app[data-role="manager"] .manager-locations__view-action {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   Manager Team and Roles — reference-inspired redesign
+   Manager-only scope. Worker pages are not affected.
+   ========================================================= */
+
+.app[data-role="manager"] .manager-team {
+  width: 100%;
+  min-width: 0;
+  color: var(--manager-text);
+}
+
+/* Page heading */
+.app[data-role="manager"] .manager-team__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin: 0 0 1.15rem;
+}
+
+.app[data-role="manager"] .manager-team__heading-copy {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-team__heading-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 3.15rem;
+  width: 3.15rem;
+  height: 3.15rem;
+  border: 1px solid rgba(117, 76, 255, 0.13);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #f1eaff, #e8e9ff);
+  color: #6335e9;
+}
+
+.app[data-role="manager"] .manager-team__heading h1 {
+  margin: 0;
+  color: var(--manager-text);
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+
+.app[data-role="manager"] .manager-team__heading p {
+  margin: 0.32rem 0 0;
+  color: var(--manager-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.app[data-role="manager"] .manager-team__refresh {
+  flex: 0 0 auto;
+  min-height: 2.65rem;
+  border-radius: 0.8rem;
+}
+
+/* Add member form card.
+   AddMemberForm remains unchanged; this styles its existing Card/form. */
+.app[data-role="manager"] .manager-team__add-card {
+  margin: 0 0 1rem;
+}
+
+.app[data-role="manager"] .manager-team__add-card > .card {
+  padding: 1.05rem 1.1rem 1.15rem;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 6px 18px rgba(44, 52, 112, 0.045);
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.85rem 1.15rem;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 0.05rem;
+  color: var(--manager-text);
+  font-size: 0.98rem;
+  font-weight: 750;
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member label {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  color: var(--manager-text);
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member input,
+.app[data-role="manager"] .manager-team__add-card .add-member select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.65rem;
+  box-sizing: border-box;
+  padding: 0.62rem 0.75rem;
+  border: 1px solid #dce1f0;
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #17213b;
+  font: inherit;
+  font-size: 0.82rem;
+  box-shadow: 0 1px 2px rgba(24, 34, 70, 0.025);
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member input:focus,
+.app[data-role="manager"] .manager-team__add-card .add-member select:focus {
+  border-color: #8c6bf0;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(99, 53, 232, 0.11);
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member input::placeholder {
+  color: #8993ad;
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member .ba-error {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.app[data-role="manager"] .manager-team__add-card .add-member > button {
+  justify-self: end;
+  align-self: end;
+  min-width: 10.5rem;
+  min-height: 2.65rem;
+  padding-inline: 1.1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 14px rgba(83, 48, 218, 0.17);
+}
+
+/* Member list card */
+.app[data-role="manager"] .manager-team__members-card {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e0e3f5;
+  border-radius: 1rem;
+  background: var(--manager-surface);
+  box-shadow: 0 7px 22px rgba(44, 52, 112, 0.05);
+}
+
+/* Tabs + search toolbar */
+.app[data-role="manager"] .manager-team__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+  min-height: 4.1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--manager-border);
+}
+
+.app[data-role="manager"] .manager-team__toolbar .tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.app[data-role="manager"] .manager-team__toolbar .tab {
+  min-height: 2.25rem;
+  padding: 0.48rem 0.72rem;
+  border-radius: 0.65rem;
+  font-size: 0.75rem;
+}
+
+.app[data-role="manager"] .manager-team__toolbar .tab.is-active {
+  color: #6033e6;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(50, 43, 112, 0.09);
+}
+
+.app[data-role="manager"] .manager-team__toolbar .tab-count {
+  background: #eceeff;
+  color: #52618a;
+  font-size: 0.68rem;
+}
+
+.app[data-role="manager"] .manager-team__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: clamp(14rem, 28vw, 22rem);
+  min-height: 2.55rem;
+  padding: 0 0.75rem;
+  border: 1px solid #d9def2;
+  border-radius: 0.75rem;
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+}
+
+.app[data-role="manager"] .manager-team__search:focus-within {
+  border-color: #8c6bf0;
+  box-shadow: 0 0 0 3px rgba(99, 53, 232, 0.11);
+}
+
+.app[data-role="manager"] .manager-team__search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--manager-text);
+  font: inherit;
+  font-size: 0.78rem;
+  box-shadow: none;
+}
+
+.app[data-role="manager"] .manager-team__search input::placeholder {
+  color: #8792ad;
+}
+
+.app[data-role="manager"] .manager-team__clear-search {
+  display: grid;
+  place-items: center;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--manager-muted);
+  cursor: pointer;
+}
+
+.app[data-role="manager"] .manager-team__clear-search:hover {
+  background: #f0eaff;
+  color: #6533e9;
+}
+
+/* Table */
+.app[data-role="manager"] .manager-team__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.app[data-role="manager"] .manager-team__table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app[data-role="manager"] .manager-team__table thead th {
+  height: 2.8rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--manager-border);
+  background: var(--manager-surface);
+  color: var(--manager-muted);
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.015em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-team__table thead th:first-child,
+.app[data-role="manager"] .manager-team__table tbody th:first-child {
+  padding-left: 1.2rem;
+}
+
+.app[data-role="manager"] .manager-team__table tbody tr {
+  transition: background 140ms ease;
+}
+
+.app[data-role="manager"] .manager-team__table tbody tr:hover {
+  background: #f8f7ff;
+}
+
+.app[data-role="manager"] .manager-team__table tbody th,
+.app[data-role="manager"] .manager-team__table tbody td {
+  height: 4.15rem;
+  padding: 0.62rem 0.85rem;
+  border-bottom: 1px solid #e9ebf5;
+  color: var(--manager-text);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.app[data-role="manager"] .manager-team__table tbody tr:last-child th,
+.app[data-role="manager"] .manager-team__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app[data-role="manager"] .manager-team__person {
+  gap: 0.65rem;
+  min-width: 13rem;
+}
+
+.app[data-role="manager"] .manager-team__person .avatar {
+  flex: 0 0 auto;
+  border: 1px solid rgba(101, 68, 231, 0.1);
+  background: #e9eaff;
+  color: #5145d9;
+  font-weight: 750;
+}
+
+.app[data-role="manager"] .manager-team__person-copy {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.app[data-role="manager"] .manager-team__person-copy .table-title {
+  color: var(--manager-text);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.app[data-role="manager"] .manager-team__person-copy .table-meta {
+  max-width: 19rem;
+  overflow: hidden;
+  color: var(--manager-muted);
+  font-size: 0.68rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-team__account-active,
+.app[data-role="manager"] .manager-team__account-inactive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-team__account-active > span,
+.app[data-role="manager"] .manager-team__account-inactive > span {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+}
+
+.app[data-role="manager"] .manager-team__account-active > span {
+  background: #16a765;
+  box-shadow: 0 0 0 3px rgba(22, 167, 101, 0.1);
+}
+
+.app[data-role="manager"] .manager-team__account-inactive > span {
+  background: #9aa4b8;
+}
+
+.app[data-role="manager"] .manager-team__actions-heading,
+.app[data-role="manager"] .manager-team__actions-cell {
+  width: 8.5rem;
+  text-align: center !important;
+}
+
+.app[data-role="manager"] .manager-team__actions-cell {
+  white-space: nowrap;
+}
+
+.app[data-role="manager"] .manager-team__save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 4.8rem;
+  min-height: 2.15rem;
+  border-radius: 0.65rem;
+}
+
+.app[data-role="manager"] .manager-team__self-note {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--manager-muted);
+  font-size: 0.62rem;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.app[data-role="manager"] .manager-team__table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.2rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--manager-border);
+  color: var(--manager-muted);
+  font-size: 0.7rem;
+}
+
+.app[data-role="manager"] .manager-team__table-footer button {
+  padding: 0.3rem 0.55rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #6335e9;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Dark Manager theme */
+.app[data-role="manager"][data-theme="dark"] .manager-team__heading-icon {
+  border-color: #493b79;
+  background: #292344;
+  color: #c4aaff;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__add-card > .card,
+.app[data-role="manager"][data-theme="dark"] .manager-team__members-card {
+  border-color: var(--manager-border);
+  background: var(--manager-surface);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__add-card .add-member input,
+.app[data-role="manager"][data-theme="dark"] .manager-team__add-card .add-member select {
+  border-color: var(--manager-border);
+  background: #111b31;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__toolbar {
+  border-color: var(--manager-border);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__toolbar .tab.is-active {
+  background: #283354;
+  color: #d3c5ff;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__search {
+  border-color: var(--manager-border);
+  background: #111b31;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__table thead th,
+.app[data-role="manager"][data-theme="dark"] .manager-team__table tbody th,
+.app[data-role="manager"][data-theme="dark"] .manager-team__table tbody td {
+  border-color: var(--manager-border);
+  background: transparent;
+  color: var(--manager-text);
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__table tbody tr:hover {
+  background: #202b47;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__person .avatar {
+  border-color: #49416e;
+  background: #302b55;
+  color: #d4c8ff;
+}
+
+.app[data-role="manager"][data-theme="dark"] .manager-team__table-footer {
+  border-color: var(--manager-border);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app[data-role="manager"] .manager-team__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-team__search {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 640px) {
+  .app[data-role="manager"] .manager-team__heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app[data-role="manager"] .manager-team__refresh {
+    align-self: flex-end;
+  }
+
+  .app[data-role="manager"] .manager-team__add-card .add-member {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app[data-role="manager"] .manager-team__add-card .add-member h3,
+  .app[data-role="manager"] .manager-team__add-card .add-member .ba-error {
+    grid-column: 1;
+  }
+
+  .app[data-role="manager"] .manager-team__add-card .add-member > button {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .app[data-role="manager"] .manager-team__toolbar .tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .app[data-role="manager"] .manager-team__toolbar .tab {
+    flex: 0 0 auto;
+  }
+
+  .app[data-role="manager"] .manager-team__table-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app[data-role="manager"] .manager-team__table tbody tr {
+    transition: none;
+  }
+}

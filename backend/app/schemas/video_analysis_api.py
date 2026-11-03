@@ -1,4 +1,4 @@
-"""Public API contracts for triggering and retrieving Step 6 analysis."""
+"""Public API contracts for triggering and retrieving video analysis."""
 from typing import Literal
 from uuid import UUID
 from datetime import datetime

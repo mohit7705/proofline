@@ -1,4 +1,4 @@
-"""v2 step 1: evidence phases, self-created work, challenge code, scores, roles."""
+"""Evidence phases, self-created work, challenge code, scores, roles."""
 
 import re
 import uuid
@@ -14,7 +14,7 @@ from test_hardening_and_ai import mock_ai, upload_video  # noqa: F401 (fixture)
 from test_verification_engine import add_task, add_video, make_task, verification
 from test_workflow_routes import png
 
-WORKER_PASSWORD = "Worker-Step1-Password-123"
+WORKER_PASSWORD = "Worker-Test-Password-123"
 
 
 def new_user(setup, role, name="Step One"):
@@ -156,7 +156,7 @@ def test_worker_creates_own_work_order_task_and_checklist(setup):
     assert pair.status_code == 200 and pair.json()["requires_before_after"] is True
 
 
-def test_worker_cannot_assign_or_change_status_or_delete(setup):
+def test_worker_cannot_assign_or_change_status_but_can_delete_own_work(setup):
     client = setup["client"]
     other = str(setup["other_worker_id"])
     order, task, _ = worker_creates_work(setup)
@@ -172,13 +172,13 @@ def test_worker_cannot_assign_or_change_status_or_delete(setup):
     assert client.patch(
         f"/tasks/{task['id']}", json={"assigned_to": other}, headers=worker
     ).status_code == 403
-    assert client.delete(f"/tasks/{task['id']}", headers=worker).status_code == 403
     assert client.patch(
         f"/work-orders/{order['id']}", json={"status": "approved"}, headers=worker
     ).status_code == 403
+    assert client.delete(f"/tasks/{task['id']}", headers=worker).status_code == 204
 
 
-def test_worker_cannot_change_work_a_manager_gave_them(setup):
+def test_worker_can_rename_assigned_task_but_not_add_tasks_or_items(setup):
     client = setup["client"]
     task_id, (req,) = make_task(setup, [{"minimum_evidence_count": 1}])
     worker = auth(setup["worker_token"])
@@ -196,17 +196,31 @@ def test_worker_cannot_change_work_a_manager_gave_them(setup):
     ).status_code == 403
     assert client.patch(
         f"/tasks/{task_id}", json={"title": "Renamed"}, headers=worker
+    ).status_code == 200
+    assert client.patch(
+        f"/tasks/{task_id}", json={"status": "approved"}, headers=worker
     ).status_code == 403
 
 
-def test_worker_cannot_edit_own_task_once_it_is_with_a_reviewer(setup):
+def test_worker_can_still_edit_own_work_after_submit(setup):
     client = setup["client"]
     _, task, item = worker_creates_work(setup)
     worker = auth(setup["worker_token"])
     assert upload_phase(setup, task["id"], "proof", None, item["id"]).status_code == 201
     assert client.post(f"/tasks/{task['id']}/submit", headers=worker).status_code == 200
     assert client.patch(
-        f"/tasks/{task['id']}", json={"title": "Sneaky change"}, headers=worker
+        f"/tasks/{task['id']}", json={"title": "Fixed typo"}, headers=worker
+    ).status_code == 200
+
+
+def test_worker_cannot_edit_assigned_task_once_it_is_with_a_reviewer(setup):
+    client = setup["client"]
+    task_id, (req,) = make_task(setup, [{"minimum_evidence_count": 1}])
+    worker = auth(setup["worker_token"])
+    assert upload_phase(setup, task_id, "proof", None, req).status_code == 201
+    assert client.post(f"/tasks/{task_id}/submit", headers=worker).status_code == 200
+    assert client.patch(
+        f"/tasks/{task_id}", json={"title": "Sneaky change"}, headers=worker
     ).status_code == 409
 
 

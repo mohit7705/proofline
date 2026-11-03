@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { EvidenceList } from "../../components/evidence/EvidenceList";
 import { Button, IconButton } from "../../components/ui/Button";
 import { Icon } from "../../components/ui/Icon";
@@ -11,7 +11,7 @@ import { RoleBadge } from "../../components/ui/RoleBadge";
 import { coverageFor, mergeEvidence, unmetRequirements } from "../../lib/evidence";
 import { formatBytes, pluralize } from "../../lib/format";
 import { TASK_STATUS } from "../../lib/status";
-import { ApiError, errorMessage, submitTaskForReview } from "../../services/api";
+import { ApiError, deleteEvidence, errorMessage, submitTaskForReview } from "../../services/api";
 import type { Evidence, Location, Role, WorkerTask } from "../../types";
 import { useTaskRecord } from "../review/useTaskRecord";
 import { locationLabel } from "../work-orders/LocationFields";
@@ -20,6 +20,54 @@ import { AiReport } from "./AiReport";
 import { useCaptureConsent } from "./useCaptureConsent";
 import { useUploadQueue, type EvidencePhase } from "./useUploadQueue";
 import { VoiceNote } from "./VoiceNote";
+
+/** One uploaded file inside the Before / After box, with Replace and Remove. */
+function FileRow({
+  file,
+  locked,
+  busy,
+  onRemove,
+  onReplace,
+}: {
+  file: Evidence;
+  locked: boolean;
+  busy: boolean;
+  onRemove: (file: Evidence) => void;
+  onReplace: (file: Evidence, replacement: File) => void;
+}) {
+  const picker = useRef<HTMLInputElement>(null);
+  return (
+    <li className="phase-file">
+      <Icon name={file.media_type === "video" ? "video" : "image"} size={15} />
+      <span className="phase-file__name" title={file.original_filename}>
+        {file.original_filename}
+      </span>
+      {locked ? null : (
+        <span className="phase-file__actions">
+          <input
+            ref={picker}
+            type="file"
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden="true"
+            accept={file.media_type === "video" ? "video/*" : "image/*"}
+            onChange={(e) => {
+              const chosen = e.target.files?.[0];
+              e.target.value = "";
+              if (chosen) onReplace(file, chosen);
+            }}
+          />
+          <button type="button" disabled={busy} onClick={() => picker.current?.click()}>
+            <Icon name="edit" size={13} /> Replace
+          </button>
+          <button type="button" className="is-danger" disabled={busy} onClick={() => onRemove(file)}>
+            <Icon name="trash" size={13} /> Remove
+          </button>
+        </span>
+      )}
+    </li>
+  );
+}
 
 interface Props {
   item: WorkerTask;
@@ -41,6 +89,10 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
   const [submitNote, setSubmitNote] = useState<{ tone: "warn" | "fail"; text: string } | null>(null);
   const [reportKey, setReportKey] = useState(0);
   const [aiNote, setAiNote] = useState<string | null>(null);
+  const [view, setView] = useState<"photos" | "report">("photos");
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const queue = useUploadQueue(task.id, (evidence) => {
     setSessionDone((cur) => [...cur, evidence]);
@@ -57,7 +109,9 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
   const missing = unmet.map((c) => `${c.requirement.title} (${c.needed - c.count} more)`);
   const status = TASK_STATUS[task.status];
   const location = locations.find((l) => l.id === task.location_id);
-  const locked = task.status === "approved" || task.status === "submitted";
+  const approved = task.status === "approved";
+  const withSubmission = task.status === "submitted";
+  const locked = approved;
 
   // A reviewer's note and the engine's follow-up matter only after the task was sent back.
   const lastReview = record.data?.reviews?.[0];
@@ -66,7 +120,12 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
 
   // Same rule as the server, so the button never invites a request that will be refused.
   const canSubmit =
-    !locked && !submitting && queue.pendingCount === 0 && known.length > 0 && unmet.length === 0;
+    !locked &&
+    !withSubmission &&
+    !submitting &&
+    queue.pendingCount === 0 &&
+    known.length > 0 &&
+    unmet.length === 0;
 
   const onFiles = (
     files: File[],
@@ -82,6 +141,7 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
       await submitTaskForReview(task.id);
       setAiNote(null);
       setReportKey((key) => key + 1);
+      setView("report");
       notify("Submitted. The AI check is running.");
       void record.reload();
       onSubmitted();
@@ -96,6 +156,71 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
       setSubmitting(false);
     }
   }
+
+  async function removeFile(file: Evidence) {
+    if (
+      withSubmission &&
+      !window.confirm(
+        "This task is with a reviewer. Changing a file withdraws your submission and you will need to submit again. Continue?",
+      )
+    ) {
+      return;
+    }
+    setRemovingId(file.id);
+    setRemoveError(null);
+    try {
+      await deleteEvidence(file.id);
+      setSessionDone((cur) => cur.filter((entry) => entry.id !== file.id));
+      setConfirmId(null);
+      notify(
+        withSubmission
+          ? "File removed. Submission withdrawn, add a new file and submit again."
+          : "File removed. You can add a new one.",
+      );
+      await record.reload();
+      onEvidenceChanged?.();
+      if (withSubmission) {
+        setView("photos");
+        onSubmitted();
+      }
+    } catch (err) {
+      setRemoveError(errorMessage(err, "Could not remove that file."));
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  async function replaceFile(file: Evidence, replacement: File) {
+    if (
+      withSubmission &&
+      !window.confirm(
+        "This task is with a reviewer. Changing a file withdraws your submission and you will need to submit again. Continue?",
+      )
+    ) {
+      return;
+    }
+    setRemovingId(file.id);
+    setRemoveError(null);
+    try {
+      await deleteEvidence(file.id);
+      setSessionDone((cur) => cur.filter((entry) => entry.id !== file.id));
+      await record.reload();
+      onEvidenceChanged?.();
+      if (withSubmission) {
+        setView("photos");
+        onSubmitted();
+      }
+      const phase = file.phase === "before" || file.phase === "after" ? file.phase : "other";
+      setProblems(queue.add([replacement], file.requirement_id, phase));
+    } catch (err) {
+      setRemoveError(errorMessage(err, "Could not replace that file."));
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
+  const hasReport = approved || withSubmission || reportKey > 0;
+  const submitLabel = submitting ? "Submitting…" : queue.pendingCount > 0 ? "Uploading…" : "Submit for review";
 
   return (
     <section className="panel capture" aria-labelledby="cap-title">
@@ -115,11 +240,57 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
             {location ? ` · ${locationLabel(location)}` : ""}
           </p>
         </div>
-        <div className="capture-badges">
-          {userRole ? <RoleBadge role={userRole} /> : null}
-          <StatusBadge label={status.label} tone={status.tone} title={status.description} />
+        <div className="capture-actions">
+          <div className="capture-action-row">
+            {view === "report" ? (
+              <Button variant="secondary" size="m" onClick={() => setView("photos")}>
+                <Icon name="arrowLeft" size={15} />
+                Back to photos
+              </Button>
+            ) : (
+              <Button variant="primary" size="m" onClick={() => void submit()} disabled={!canSubmit}>
+                {submitLabel}
+              </Button>
+            )}
+            <Button
+              variant={view === "report" ? "primary" : "secondary"}
+              size="m"
+              onClick={() => setView("report")}
+              aria-pressed={view === "report"}
+            >
+              <Icon name="scan" size={15} />
+              AI check report
+            </Button>
+          </div>
+          <div className="capture-badges">
+            {userRole ? <RoleBadge role={userRole} /> : null}
+            <StatusBadge label={status.label} tone={status.tone} title={status.description} />
+          </div>
         </div>
       </header>
+
+      {view === "report" ? (
+        hasReport ? (
+          <AiReport
+            taskId={task.id}
+            requirements={requirements}
+            refreshKey={reportKey}
+            startNote={aiNote}
+            selfCreated={Boolean(order.is_self_created)}
+            taskStatus={task.status}
+            onCompleted={onSubmitted}
+          />
+        ) : (
+          <div className="air-allgood">
+            <Icon name="info" size={18} />
+            <div>
+              <strong>Submit first to get an AI report</strong>
+              <p>Add your Before and After files, then press Submit for review.</p>
+            </div>
+          </div>
+        )
+      ) : (
+        <>
 
       <div className="capture-intro">
         <span className="capture-intro-mark" aria-hidden="true">
@@ -187,6 +358,13 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
         </div>
       ) : null}
 
+      {removeError ? <Alert tone="fail">{removeError}</Alert> : null}
+      {approved && known.length > 0 ? (
+        <p className="phase-locked">
+          <Icon name="lock" size={14} /> Files can't be changed after approval.
+        </p>
+      ) : null}
+
       {requirements.length === 0 ? (
         <div className="shot">
           <p className="shot-title">{task.instructions || "Capture the completed work"}</p>
@@ -242,6 +420,22 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
                       <p className="muted small">
                         Capture the original condition before starting the task.
                       </p>
+                      {evidence.filter((file) => file.phase === "before").length > 0 ? (
+                        <ul className="phase-files">
+                          {evidence
+                            .filter((file) => file.phase === "before")
+                            .map((file) => (
+                              <FileRow
+                                key={file.id}
+                                file={file}
+                                locked={approved}
+                                busy={removingId === file.id}
+                                onRemove={(f) => void removeFile(f)}
+                                onReplace={(f, next) => void replaceFile(f, next)}
+                              />
+                            ))}
+                        </ul>
+                      ) : null}
                       <CaptureButtons
                         disabled={locked || count >= r.maximum_evidence_count}
                         wantsPhoto={r.response_type !== "video"}
@@ -259,6 +453,22 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
                       <p className="muted small">
                         Capture the completed result after the work is finished.
                       </p>
+                      {evidence.filter((file) => file.phase === "after").length > 0 ? (
+                        <ul className="phase-files">
+                          {evidence
+                            .filter((file) => file.phase === "after")
+                            .map((file) => (
+                              <FileRow
+                                key={file.id}
+                                file={file}
+                                locked={approved}
+                                busy={removingId === file.id}
+                                onRemove={(f) => void removeFile(f)}
+                                onReplace={(f, next) => void replaceFile(f, next)}
+                              />
+                            ))}
+                        </ul>
+                      ) : null}
                       <CaptureButtons
                         disabled={locked || count >= r.maximum_evidence_count}
                         wantsPhoto={r.response_type !== "video"}
@@ -363,7 +573,48 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
       {record.loading && !record.data ? (
         <PageLoading label="Loading what you've submitted…" />
       ) : known.length > 0 ? (
-        <EvidenceList evidence={known} requirements={requirements} />
+        <>
+          {removeError ? <Alert tone="fail">{removeError}</Alert> : null}
+          <EvidenceList
+            evidence={known}
+            requirements={requirements}
+            renderActions={
+              approved
+                ? undefined
+                : (file) =>
+                    confirmId === file.id ? (
+                      <span className="evidence-confirm">
+                        <span>Remove this file?</span>
+                        <Button
+                          size="s"
+                          variant="danger"
+                          onClick={() => void removeFile(file)}
+                          disabled={removingId === file.id}
+                        >
+                          {removingId === file.id ? "Removing…" : "Yes, remove"}
+                        </Button>
+                        <Button size="s" variant="ghost" onClick={() => setConfirmId(null)}>
+                          Keep
+                        </Button>
+                      </span>
+                    ) : (
+                      <Button
+                        size="s"
+                        variant="ghost"
+                        aria-label={`Remove ${file.original_filename}`}
+                        onClick={() => {
+                          setRemoveError(null);
+                          setConfirmId(file.id);
+                        }}
+                      >
+                        <Icon name="trash" size={14} />
+                        Remove
+                      </Button>
+                    )
+            }
+          />
+          {!approved ? <p className="muted small">Uploaded the wrong file? Remove or replace it, then add the right one above.</p> : null}
+        </>
       ) : (
         <div className="capture-empty-evidence">
           <span className="capture-empty-icon"><Icon name="image" size={20} /></span>
@@ -386,18 +637,14 @@ export function TaskCapture({ item, locations, onSubmitted, onEvidenceChanged, o
           </p>
         ) : null}
         {submitNote ? <Alert tone={submitNote.tone}>{submitNote.text}</Alert> : null}
-        <Button variant="primary" size="l" onClick={() => void submit()} disabled={!canSubmit}>
-          {submitting ? "Submitting…" : queue.pendingCount > 0 ? "Uploading…" : "Submit for review"}
-        </Button>
-        {locked ? (
+        {locked || withSubmission ? (
           <p className="muted small">
             {task.status === "approved" ? "This task is approved." : "This task is already with a reviewer."}
           </p>
         ) : null}
       </div>
-      {locked || reportKey > 0 ? (
-        <AiReport taskId={task.id} requirements={requirements} refreshKey={reportKey} startNote={aiNote} />
-      ) : null}
+        </>
+      )}
     </section>
   );
 }

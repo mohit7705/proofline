@@ -1,4 +1,4 @@
-"""Step 2: task verification results and the escalate review decision."""
+"""Task verification results and the escalate review decision."""
 
 from alembic import op
 import sqlalchemy as sa

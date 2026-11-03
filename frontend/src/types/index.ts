@@ -7,7 +7,7 @@
 export type Role = "manager" | "worker";
 
 export interface User {
-  id: string;
+  id?: string;
   name: string;
   email: string;
   role: Role;
@@ -354,6 +354,9 @@ export interface ScoreJob {
   task_id: string;
   status: "none" | "queued" | "processing" | "completed" | "failed";
   error_code: string | null;
+  created_at?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
 }
 
 export interface ScoreAnalysis {

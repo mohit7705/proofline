@@ -1,7 +1,7 @@
 """Saving and reading AI scores.
 
 A score is advice for the reviewer. It never approves or rejects a task. The
-AI step (Step 2) calls save_score_set(); this module only stores, bands and
+The AI score job calls save_score_set(); this module only stores, bands and
 reads the numbers.
 """
 

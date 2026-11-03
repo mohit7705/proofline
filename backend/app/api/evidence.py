@@ -20,13 +20,14 @@ from fastapi import (
     status,
 )
 from fastapi.responses import FileResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.auth import CurrentUser, require_roles
 from app.core.dependencies import get_db
 from app.ai.client import MetaAIError
 from app.services.evidence_segmentation import segment_image
-from app.models import Evidence, User
+from app.models import Evidence, User, VerificationRun
 from app.models.requirement import Requirement
 from app.schemas.evidence import EvidenceResponse
 from app.services.audit import record_event
@@ -391,6 +392,64 @@ def upload_evidence(
         ) from None
     finally:
         file.file.close()
+
+
+@router.delete("/evidence/{evidence_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_evidence(
+    evidence_id: uuid.UUID,
+    db: DbSession,
+    user: CurrentUser,
+) -> Response:
+    """Remove a wrong upload so a new one can be added.
+
+    Workers can remove only their own files. Managers can remove any file.
+    Submitted tasks are withdrawn when their evidence changes.
+    """
+    evidence = _authorized_evidence(db, evidence_id, user)
+    task = get_task(db, evidence.task_id)
+
+    if user.role == "worker" and evidence.submitted_by != user.id:
+        raise HTTPException(status_code=403, detail="You can only remove your own files")
+    if task.status == "approved":
+        raise HTTPException(
+            status_code=409,
+            detail="This task is approved, so its files can no longer be changed",
+        )
+
+    storage_dir = _storage_dir()
+    path = (storage_dir / evidence.storage_key).resolve() if evidence.storage_key else None
+    record_event(
+        db,
+        user.id,
+        "evidence",
+        evidence.id,
+        "evidence.deleted",
+        {
+            "task_id": str(task.id),
+            "filename": evidence.original_filename,
+            "sha256": evidence.sha256_hash,
+            "phase": evidence.phase,
+        },
+    )
+    for run in list(db.scalars(select(VerificationRun).where(VerificationRun.evidence_id == evidence.id))):
+        db.delete(run)
+    db.delete(evidence)
+    if task.status == "submitted":
+        task.status = "in_progress"
+        record_event(
+            db,
+            user.id,
+            "task",
+            task.id,
+            "task.withdrawn",
+            {"from": "submitted", "to": "in_progress", "reason": "evidence changed"},
+        )
+        roll_up_work_order(db, task.work_order, user.id)
+    db.commit()
+
+    if path is not None and path.parent == storage_dir:
+        path.unlink(missing_ok=True)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/evidence/{evidence_id}", response_model=EvidenceResponse)

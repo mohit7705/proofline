@@ -1,4 +1,4 @@
-"""Authorized API endpoints for Step 6 video analysis."""
+"""Authorized API endpoints for video analysis."""
 from datetime import UTC, datetime
 import math
 from typing import Annotated
