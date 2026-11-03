@@ -1,0 +1,613 @@
+.role-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+.role-manager {
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: var(--info);
+}
+.role-worker {
+  background: var(--ok-soft);
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.role-self {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.score-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+}
+.score-ring .ring-track {
+  stroke: var(--line);
+}
+.score-ring .ring-value {
+  transition: stroke-dasharray 0.6s var(--ease);
+}
+.score-ring .ring-text {
+  position: absolute;
+  font-weight: 700;
+  font-size: 1.1em;
+  color: var(--ink);
+}
+.band-strong .ring-value {
+  stroke: var(--ok);
+}
+.band-check .ring-value {
+  stroke: var(--warn);
+}
+.band-weak .ring-value {
+  stroke: var(--fail);
+}
+.band-not_scored .ring-value {
+  stroke: var(--pending);
+}
+
+.score-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.score-chip.band-strong {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.score-chip.band-check {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.score-chip.band-weak {
+  background: var(--fail-soft);
+  color: var(--fail);
+}
+.score-chip.band-not_scored {
+  background: var(--pending-soft);
+  color: var(--pending);
+}
+
+.score-card,
+.ba-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  padding: 20px;
+  box-shadow: var(--shadow-s);
+  margin-top: 16px;
+}
+.score-card-top {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.score-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pending);
+}
+.score-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--pending);
+}
+.score-stale {
+  background: var(--warn-soft);
+  color: var(--warn);
+  padding: 8px 12px;
+  border-radius: var(--r-s);
+}
+.score-reasons {
+  margin: 12px 0;
+  padding-left: 18px;
+}
+.score-retake {
+  background: var(--info-soft);
+  border-radius: var(--r-s);
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+.score-item {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 16px;
+}
+.score-item-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.score-item-head h4 {
+  margin: 0 0 4px;
+}
+.score-parts {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: grid;
+  gap: 8px;
+}
+.score-parts li {
+  display: grid;
+  grid-template-columns: 1fr 120px 32px;
+  gap: 8px;
+  align-items: center;
+}
+.part-bar {
+  height: 6px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.part-bar span {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+}
+.part-detail {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--pending);
+}
+
+.ba-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.ba-steps li {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+}
+.ba-steps li.now {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.ba-steps li.done {
+  border-color: var(--ok);
+}
+.ba-steps li div {
+  margin-top: 8px;
+}
+.challenge-code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: var(--brand-soft);
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+}
+.ba-error {
+  color: var(--fail);
+}
+.ba-running {
+  color: var(--info);
+}
+
+.file-grid {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 16px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+.file-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--r-m);
+  background: var(--line);
+  display: block;
+}
+.file-name {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.self-work-dialog {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+  display: grid;
+  gap: 12px;
+}
+.self-work-dialog label {
+  display: grid;
+  gap: 4px;
+  font-weight: 500;
+}
+.self-item {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.self-item .check {
+  display: flex;
+  gap: 6px;
+  font-weight: 400;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.worker-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.add-member {
+  display: grid;
+  gap: 12px;
+  max-width: 480px;
+}
+.add-member label {
+  display: grid;
+  gap: 4px;
+  font-weight: 500;
+}
+.outline-list ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+}
+.outline-list code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+@media (max-width: 640px) {
+  .score-parts li {
+    grid-template-columns: 1fr 80px 28px;
+  }
+}
+
+/* Helpful guidance for the worker's self-created work form. */
+.self-work-field {
+  display: grid;
+  gap: 6px;
+}
+.self-work-field small,
+.self-work-help {
+  color: var(--muted, #667085);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.self-work-field input::placeholder,
+.self-work-field textarea::placeholder,
+.self-item input::placeholder {
+  color: #8992a5;
+  opacity: 1;
+}
+.self-work-checklist {
+  display: grid;
+  gap: 10px;
+}
+.self-work-help {
+  margin: 0 0 2px;
+}
+.self-work-example {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #dce2ee);
+  border-radius: 10px;
+  background: var(--surface-soft, #f7f8fc);
+  color: var(--muted, #596579);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.self-work-example strong {
+  color: var(--text, #19233b);
+}
+
+
+/* Premium, plain-language self-created work dialog. */
+.dialog:has(.self-work-dialog) {
+  width: min(54rem, calc(100% - 1.5rem));
+  border: 1px solid var(--line, #e1e6f0);
+  border-radius: 22px;
+  box-shadow: 0 28px 90px rgba(17, 27, 56, 0.24);
+}
+.dialog:has(.self-work-dialog) .dialog-body {
+  padding: clamp(1.1rem, 3vw, 2rem);
+}
+.dialog:has(.self-work-dialog) .dialog-head {
+  margin-bottom: 1.35rem;
+}
+.dialog:has(.self-work-dialog) .dialog-title {
+  letter-spacing: -0.035em;
+  font-weight: 750;
+}
+.dialog:has(.self-work-dialog) .dialog-desc {
+  max-width: 42rem;
+  line-height: 1.55;
+}
+.self-work-dialog {
+  gap: 1rem;
+}
+.self-work-review-note {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--brand, #465fff) 20%, var(--line, #e1e6f0));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--brand, #465fff) 6%, var(--surface, #fff));
+}
+.self-work-review-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 11px;
+  color: var(--brand, #465fff);
+  background: color-mix(in srgb, var(--brand, #465fff) 13%, transparent);
+  font-weight: 800;
+}
+.self-work-review-note strong {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ink, #18213a);
+}
+.self-work-review-note p {
+  margin: 0.15rem 0 0;
+  color: var(--ink-3, #667085);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.self-work-review-tag {
+  margin-left: auto;
+  white-space: nowrap;
+  color: var(--brand, #465fff);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+.self-work-section {
+  padding: 1.1rem;
+  border: 1px solid var(--line, #e1e6f0);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+  display: grid;
+  gap: 1rem;
+}
+.self-work-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.self-work-step-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.35rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 12px;
+  background: var(--surface-soft, #f2f5fb);
+  color: var(--brand, #465fff);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.self-work-section-heading h3 {
+  margin: 0;
+  color: var(--ink, #18213a);
+  font-size: 1rem;
+  font-weight: 750;
+}
+.self-work-section-heading p {
+  margin: 0.18rem 0 0;
+  color: var(--ink-3, #667085);
+  font-size: 0.78rem;
+}
+.self-work-step-count {
+  margin-left: auto;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: var(--surface-soft, #f2f5fb);
+  color: var(--ink-2, #46516a);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.self-work-field {
+  display: grid;
+  gap: 0.45rem;
+}
+.self-work-field > label,
+.self-work-checklist-input > label:first-child {
+  color: var(--ink, #18213a);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.self-work-field > label span {
+  color: var(--ink-3, #667085);
+  font-weight: 500;
+}
+.self-work-field input,
+.self-work-field textarea,
+.self-work-checklist-input input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--line-strong, #cbd3e1);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  color: var(--ink, #18213a);
+  font: inherit;
+  font-size: 0.88rem;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.self-work-field textarea {
+  min-height: 6.2rem;
+  resize: vertical;
+}
+.self-work-field input:focus,
+.self-work-field textarea:focus,
+.self-work-checklist-input input:not([type="checkbox"]):focus {
+  outline: none;
+  border-color: var(--brand, #465fff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand, #465fff) 14%, transparent);
+}
+.self-work-field input::placeholder,
+.self-work-field textarea::placeholder,
+.self-work-checklist-input input::placeholder {
+  color: var(--ink-3, #8992a5);
+  opacity: 1;
+}
+.self-work-field-hint {
+  color: var(--ink-3, #667085);
+  font-size: 0.73rem;
+}
+.self-work-due-field {
+  max-width: 24rem;
+}
+.self-work-checklist {
+  display: grid;
+  gap: 0.85rem;
+}
+.self-work-checklist-row {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--line, #e1e6f0);
+  border-radius: 12px;
+  background: var(--surface-soft, #f8f9fc);
+}
+.self-work-row-number {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9px;
+  background: var(--surface, #fff);
+  color: var(--ink-3, #667085);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.self-work-checklist-input {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.self-work-dialog .self-work-before-after {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+  cursor: pointer;
+}
+.self-work-before-after input {
+  margin: 0.18rem 0 0;
+  accent-color: var(--brand, #465fff);
+}
+.self-work-before-after span {
+  display: grid;
+  gap: 0.1rem;
+}
+.self-work-before-after strong {
+  color: var(--ink-2, #46516a);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+.self-work-before-after small {
+  color: var(--ink-3, #667085);
+  font-size: 0.7rem;
+}
+.self-work-remove-step {
+  border: 0;
+  padding: 0.35rem 0.2rem;
+  background: transparent;
+  color: var(--danger, #c2414b);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.self-work-remove-step:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.self-work-add-step {
+  justify-self: start;
+}
+.self-work-add-step span {
+  font-size: 1rem;
+  line-height: 0;
+}
+.self-work-simple-example {
+  padding: 0.95rem 1.05rem;
+  border-radius: 13px;
+  background: var(--surface-soft, #f4f6fb);
+  border: 1px dashed var(--line-strong, #cbd3e1);
+  color: var(--ink-2, #46516a);
+}
+.self-work-simple-example > strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--ink, #18213a);
+  font-size: 0.8rem;
+}
+.self-work-simple-example p {
+  margin: 0.18rem 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+.self-work-simple-example b {
+  color: var(--ink, #18213a);
+}
+.self-work-dialog-actions {
+  padding-top: 0.2rem;
+}
+@media (max-width: 600px) {
+  .self-work-review-note {
+    align-items: flex-start;
+  }
+  .self-work-review-tag {
+    display: none;
+  }
+  .self-work-section {
+    padding: 0.85rem;
+  }
+  .self-work-checklist-row {
+    grid-template-columns: 1.8rem minmax(0, 1fr);
+  }
+  .self-work-remove-step {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .self-work-due-field {
+    max-width: none;
+  }
+}

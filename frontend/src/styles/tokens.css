@@ -1,0 +1,71 @@
+/*
+  Proofline design tokens.
+  Palette: ink #0F1530, proof blue #2D4BFF, paper #F4F5FA, surface #FFFFFF, line #E2E5F0.
+  Type: Bricolage Grotesque for headings and figures, Schibsted Grotesk for text.
+  Signature: viewfinder corner brackets (.bracketed) on anything that is being inspected.
+*/
+:root {
+  color-scheme: light;
+
+  --ink: #0f1530;
+  --ink-2: #3a4262;
+  --ink-3: #5f6988;
+  --paper: #f4f5fa;
+  --surface: #ffffff;
+  --surface-2: #eef0f8;
+  --line: #e2e5f0;
+  --line-strong: #cdd2e3;
+
+  --brand: #2d4bff;
+  --brand-hover: #2039d6;
+  --brand-soft: #e6eaff;
+  --brand-light: #8f9bff;
+  --on-brand: #ffffff;
+
+  --ok: #0a7a52;
+  --ok-soft: #dcf5ea;
+  --warn: #9a5b00;
+  --warn-soft: #fdeecb;
+  --fail: #c62828;
+  --fail-soft: #fde4e2;
+  --review: #6b3fd4;
+  --review-soft: #ece6fc;
+  --pending: #5d6684;
+  --pending-soft: #e9ebf4;
+  --info: #2039d6;
+  --info-soft: #e6eaff;
+
+  --dark: #0f1530;
+  --dark-2: #171e42;
+  --dark-3: #202853;
+  --dark-line: rgba(255, 255, 255, 0.1);
+  --on-dark: #f4f5ff;
+  --on-dark-2: #aab2d6;
+
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.86rem);
+  --step-0: clamp(0.94rem, 0.92rem + 0.12vw, 1.03rem);
+  --step-1: clamp(1.1rem, 1.04rem + 0.3vw, 1.28rem);
+  --step-2: clamp(1.4rem, 1.25rem + 0.7vw, 1.8rem);
+  --step-3: clamp(1.85rem, 1.5rem + 1.6vw, 2.7rem);
+  --step-4: clamp(2.5rem, 1.7rem + 3.6vw, 4.5rem);
+
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --max: 76rem;
+  --sidebar: 16.5rem;
+
+  --r-xs: 6px;
+  --r-s: 10px;
+  --r-m: 14px;
+  --r-l: 22px;
+
+  --shadow-s: 0 1px 2px rgba(15, 21, 48, 0.05), 0 0 0 1px rgba(15, 21, 48, 0.02);
+  --shadow-m: 0 10px 28px -12px rgba(15, 21, 48, 0.22), 0 2px 6px rgba(15, 21, 48, 0.05);
+  --shadow-l: 0 40px 80px -30px rgba(15, 21, 48, 0.45), 0 8px 20px -8px rgba(15, 21, 48, 0.18);
+  --ring: 0 0 0 4px rgba(45, 75, 255, 0.18);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

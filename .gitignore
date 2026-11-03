@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+# Virtual environments at the root or anywhere below it
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+node_modules/
+dist/
+.vite/
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Logs
+*.log
+
+# Test and coverage output
+.coverage
+htmlcov/
+
+# Generated media and temporary files
+uploads/
+tmp/
+
+# Local database backups (may contain sensitive data)
+*.dump
+proofline-before-google-auth.sql
+frontend/tsconfig.tsbuildinfo
+frontend/dist
+
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Frontend
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Temporary and backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+*.swp
+*.swo
+*~
+
+# Local IDE settings
+.vscode/

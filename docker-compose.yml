@@ -1,0 +1,75 @@
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+          DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-proofline}:${POSTGRES_PASSWORD:-proofline_local_dev_2026}@db:5432/${POSTGRES_DB:-proofline}
+          JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+          GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+          EVIDENCE_STORAGE_DIR: /var/lib/proofline/evidence
+          MODEL_API_KEY: ${MODEL_API_KEY:-}
+          META_API_BASE_URL: ${META_API_BASE_URL:-https://api.meta.ai}
+          META_API_TIMEOUT_SECONDS: ${META_API_TIMEOUT_SECONDS:-60}
+          VIDEO_ANALYSIS_MODEL: ${VIDEO_ANALYSIS_MODEL:-muse-spark-1.3}
+          VIDEO_ANALYSIS_ENDPOINT: ${VIDEO_ANALYSIS_ENDPOINT:-/v1/responses}
+          MODEL_MOCK: ${MODEL_MOCK:-false}
+          VERIFICATION_MIN_CONFIDENCE: ${VERIFICATION_MIN_CONFIDENCE:-0.6}
+          VERIFICATION_MAX_FOLLOW_UPS: ${VERIFICATION_MAX_FOLLOW_UPS:-3}
+          CORS_ORIGINS: ${CORS_ORIGINS:-}
+          RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+          # The web service (nginx) forwards the real client address.
+          TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-true}
+          LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - evidence_data:/var/lib/proofline/evidence
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+        VITE_API_BASE: /api
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    ports:
+      - "127.0.0.1:5433:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-proofline}
+      POSTGRES_USER: ${POSTGRES_USER:-proofline}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-proofline_local_dev_2026}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  evidence_data:
